@@ -23,7 +23,7 @@ export function EventCreator() {
   const [pricePerAdult, setPricePerAdult] = useState('')
   const [pricePerChild, setPricePerChild] = useState('')
   
-  // Flexible Payment Details (Works for UPI, IBAN, Sort Code, etc.)
+  // Flexible Payment Details
   const [bankDetails, setBankDetails] = useState('')
 
   const [description, setDescription] = useState('')
@@ -47,7 +47,7 @@ export function EventCreator() {
         location,
         price_per_adult: parseFloat(pricePerAdult) || 0,
         price_per_child: parseFloat(pricePerChild) || 0,
-        bank_details: bankDetails, // Saves whatever they typed (UPI, IBAN, etc.)
+        bank_details: bankDetails,
         description: description,
         short_code: shortCode,
         theme: theme,
@@ -108,6 +108,7 @@ export function EventCreator() {
               className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${t.color} ${
                 theme === t.id ? 'ring-2 ring-offset-2 ring-black scale-110 shadow-md z-10' : 'opacity-60 hover:opacity-100 hover:scale-105'
               }`}
+              title={t.label}
             >
               <t.icon className={`w-4 h-4 ${theme === t.id ? 'text-black' : 'text-slate-600'}`} />
             </button>
@@ -149,7 +150,7 @@ export function EventCreator() {
                   <span className="text-gray-400 font-serif italic">"</span>
                   <input 
                     type="text" 
-                    placeholder="Can't wait to celebrate with you all! 🥳" 
+                    placeholder="Can't wait to celebrate with you all! 🥳"  // <--- FIXED HERE
                     value={description} 
                     onChange={(e) => setDescription(e.target.value)} 
                     className={`${inputClass} w-full sm:w-[80%] text-left font-normal not-italic`} 
@@ -171,7 +172,7 @@ export function EventCreator() {
                            <span> for kids.</span>
                          </span>
                          
-                         {/* NEW GLOBAL PAYMENT CARD UI */}
+                         {/* Universal Bank Details Text Area */}
                          <div className="mt-8 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm max-w-lg">
                             <div className="flex items-center gap-2 mb-4 text-slate-500">
                                <CreditCard className="w-4 h-4" />
@@ -187,7 +188,7 @@ export function EventCreator() {
                                  placeholder={`Examples:\n• Sort: 20-00-00 | Acc: 12345678\n• IBAN: GB33 WEST...\n• UPI: name@okhdfcbank`}
                                  value={bankDetails}
                                  onChange={(e) => setBankDetails(e.target.value)}
-                                 className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-base font-medium focus:ring-2 focus:ring-black focus:outline-none transition-all resize-none"
+                                 className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-base font-medium focus:ring-2 focus:ring-black focus:outline-none transition-all resize-none placeholder:text-slate-400"
                                />
                             </div>
                          </div>
