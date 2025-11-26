@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Calistoga } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { Suspense } from "react";
@@ -7,6 +7,13 @@ import { Suspense } from "react";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+});
+
+// Fun "Word Art" Font
+const calistoga = Calistoga({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-calistoga',
 });
 
 export const metadata: Metadata = {
@@ -33,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${calistoga.variable} font-sans antialiased`} suppressHydrationWarning>
         <Suspense fallback={children}>
           <PostHogProvider>{children}</PostHogProvider>
         </Suspense>

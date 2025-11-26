@@ -1,233 +1,150 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@/lib/supabase/server'
 
-export const runtime = 'edge'
-
-// Helper function to extract emoji from text
-function extractEmoji(text: string): { emoji: string; cleanText: string } {
-  const emojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u
-  const match = text.match(emojiRegex)
-  if (match) {
-    return {
-      emoji: match[0],
-      cleanText: text.replace(match[0], '').trim(),
-    }
-  }
-  return { emoji: '', cleanText: text }
+// Image metadata
+export const alt = 'Event Invitation'
+export const size = {
+  width: 1200,
+  height: 630,
 }
+export const contentType = 'image/png'
 
-// Helper function to format date
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-GB', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-export default async function Image({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function Image({ params }: { params: Promise<{ id: string }> }) {
+  const supabase = await createClient()
   const { id } = await params
-
-  // Fetch event data from Supabase
-  let event: { title: string; date: string; location: string } | null = null
-
-  try {
-    const supabase = await createClient()
-    const { data, error } = await supabase
-      .from('events')
-      .select('title, date, location')
-      .eq('id', id)
-      .single()
-
-    if (!error && data) {
-      event = data
-    }
-  } catch (error) {
-    console.error('Error fetching event:', error)
+  
+  // Logic to find event by UUID or ShortCode
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  
+  let query = supabase.from('events').select('title, date, location, theme')
+  
+  if (isUUID) {
+    query = query.eq('id', id)
+  } else {
+    query = query.eq('short_code', id)
   }
-
-  // If event not found, return default image
+  
+  const { data: event } = await query.single()
+  
   if (!event) {
     return new ImageResponse(
       (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+        <div style={{
+            background: '#F7F6F3',
             width: '100%',
             height: '100%',
-            background: 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'white',
-              borderRadius: '24px',
-              padding: '60px',
-              width: '80%',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '60px',
-                fontWeight: 'bold',
-                color: '#000000',
-                textAlign: 'center',
-                marginBottom: '20px',
-              }}
-            >
-              WhoIn.uk
-            </div>
-            <div
-              style={{
-                fontSize: '30px',
-                color: '#2563eb',
-                textAlign: 'center',
-                position: 'absolute',
-                bottom: '40px',
-              }}
-            >
-              ✅ RSVP via WhoIn.uk
-            </div>
-          </div>
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 800,
+            fontSize: 80,
+        }}>
+          WhoIn.uk
         </div>
-      ),
-      {
-        width: 1200,
-        height: 630,
-      }
+      )
     )
   }
 
-  // Extract emoji from title
-  const { emoji, cleanText } = extractEmoji(event.title)
+  // Format Date
+  const dateStr = new Date(event.date).toLocaleDateString('en-GB', { 
+      weekday: 'long', day: 'numeric', month: 'short' 
+  })
+  const timeStr = new Date(event.date).toLocaleTimeString('en-GB', {
+      hour: '2-digit', minute: '2-digit'
+  })
 
-  // Format date
-  const formattedDate = formatDate(event.date)
+  // Theme Colors
+  const colors: any = {
+    minimal: { bg: '#F7F6F3', text: '#0f172a', accent: '#0f172a' },
+    christmas: { bg: '#FEF2F2', text: '#7f1d1d', accent: '#dc2626' },
+    diwali: { bg: '#FFFBEB', text: '#78350f', accent: '#d97706' },
+    birthday: { bg: '#EFF6FF', text: '#1e3a8a', accent: '#2563eb' },
+  }
+  
+  // @ts-ignore
+  const theme = colors[event.theme] || colors.minimal
 
   return new ImageResponse(
     (
       <div
         style={{
+          background: theme.bg,
+          width: '100%',
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          position: 'relative',
+          padding: 80,
+          fontFamily: 'sans-serif',
         }}
       >
-        {/* Main Card */}
-        <div
-          style={{
+        {/* Card Container */}
+        <div style={{
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '60px',
-            width: '80%',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            position: 'relative',
-          }}
-        >
-          {/* Content Section */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              flex: 1,
-              gap: '20px',
-            }}
-          >
-            {/* Title */}
-            <div
-              style={{
-                fontSize: '60px',
+            background: 'white',
+            padding: '40px 80px',
+            borderRadius: 40,
+            boxShadow: '0 20px 50px rgba(0,0,0,0.1)',
+            border: '2px solid rgba(0,0,0,0.05)',
+            textAlign: 'center',
+        }}>
+             {/* Branding */}
+            <div style={{
+                fontSize: 30,
+                color: theme.accent,
+                marginBottom: 20,
                 fontWeight: 'bold',
-                color: '#000000',
-                lineHeight: '1.2',
-                maxWidth: emoji ? '85%' : '100%',
-              }}
-            >
-              {cleanText || event.title}
+                opacity: 0.7,
+            }}>
+                INVITATION
             </div>
 
-            {/* Date and Location Row */}
-            <div
-              style={{
+            {/* Title */}
+            <div style={{
+                fontSize: 80,
+                fontWeight: 900,
+                color: theme.text,
+                lineHeight: 1.1,
+                marginBottom: 30,
+                maxWidth: 900,
+                textAlign: 'center',
+                display: 'flex', // Important for wrapping
+            }}>
+                {event.title}
+            </div>
+
+            {/* Details */}
+            <div style={{
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                fontSize: '30px',
-                color: '#475569',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>📅</span>
-                <span>{formattedDate}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>📍</span>
-                <span>{event.location}</span>
-              </div>
+                gap: 40,
+                fontSize: 36,
+                color: '#64748b',
+                fontWeight: 500,
+            }}>
+                <span>📅 {dateStr}</span>
+                <span>⏰ {timeStr}</span>
             </div>
-          </div>
-
-          {/* Large Emoji (if present) */}
-          {emoji && (
-            <div
-              style={{
-                fontSize: '100px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginLeft: '40px',
-              }}
-            >
-              {emoji}
+            
+            {/* Footer */}
+            <div style={{
+                marginTop: 50,
+                fontSize: 24,
+                color: '#94a3b8',
+                background: '#f1f5f9',
+                padding: '10px 30px',
+                borderRadius: 50,
+            }}>
+                RSVP via WhoIn.uk
             </div>
-          )}
-        </div>
-
-        {/* Footer - Positioned absolutely at bottom */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '40px',
-            fontSize: '30px',
-            color: '#2563eb',
-            fontWeight: '600',
-          }}
-        >
-          ✅ RSVP via WhoIn.uk
         </div>
       </div>
     ),
     {
-      width: 1200,
-      height: 630,
+      ...size,
     }
   )
 }
-

@@ -5,6 +5,7 @@ import { ManageButton } from '@/components/manage-button'
 import { Footer } from '@/components/footer'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { Calendar, MapPin, Users } from 'lucide-react'
 
 export async function generateMetadata({
@@ -28,12 +29,11 @@ export default async function EventPage({
   const { id } = await params
   const supabase = await createClient()
 
-  // Check if it's a UUID or Short Code
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
   let query = supabase
     .from('events')
-    .select('id, title, date, location, bank_details, price_per_adult, price_per_child, user_id, theme, short_code')
+    .select('id, title, date, location, bank_details, price_per_adult, price_per_child, user_id, theme, short_code, description')
 
   if (isUUID) {
     query = query.eq('id', id)
@@ -47,14 +47,12 @@ export default async function EventPage({
     notFound()
   }
 
-  // Fetch guests
   const { data: guests } = await supabase
     .from('guests')
     .select('*')
-    .eq('event_id', event.id) // Use the actual UUID from the event data
+    .eq('event_id', event.id)
     .order('created_at', { ascending: true })
 
-  // Check if current user is the organizer
   const { data: { user } } = await supabase.auth.getUser()
   const isOrganizer = user && event.user_id === user.id
 
@@ -68,59 +66,75 @@ export default async function EventPage({
     })
   }
 
-  // Define themes
+  // Theme Logic
   const themes = {
     minimal: {
       bg: "bg-[#F7F6F3]",
       pattern: "radial-gradient(#e5e7eb 1px, transparent 1px)",
-      accent: "bg-slate-900", // Header color
+      header: "bg-slate-900",
+      text: "text-slate-900"
     },
     christmas: {
-      bg: "bg-[#FEF2F2]", // Very light red
-      pattern: "radial-gradient(#FECACA 2px, transparent 2px)", // Reddish dots (Snow-ish)
-      accent: "bg-red-700",
+      bg: "bg-[#FEF2F2]",
+      pattern: "radial-gradient(#FECACA 2px, transparent 2px)",
+      header: "bg-red-700",
+      text: "text-red-900"
     },
     diwali: {
-      bg: "bg-[#FFFBEB]", // Very light amber
-      pattern: "radial-gradient(#FCD34D 2px, transparent 2px)", // Gold dots
-      accent: "bg-amber-700",
+      bg: "bg-[#FFFBEB]",
+      pattern: "radial-gradient(#FCD34D 2px, transparent 2px)",
+      header: "bg-amber-600",
+      text: "text-amber-900"
     },
     birthday: {
-      bg: "bg-[#EFF6FF]", // Very light blue
-      pattern: "radial-gradient(#93C5FD 2px, transparent 2px)", // Blue dots
-      accent: "bg-blue-600",
+      bg: "bg-[#EFF6FF]",
+      pattern: "radial-gradient(#93C5FD 2px, transparent 2px)",
+      header: "bg-blue-600",
+      text: "text-blue-900"
     }
   }
 
-  // Get current theme (fallback to minimal)
-  const currentTheme = themes[event.theme as keyof typeof themes] || themes.minimal
+  // @ts-ignore
+  const currentTheme = themes[event.theme] || themes.minimal
 
   return (
-    <div className={`min-h-screen flex flex-col items-center py-8 sm:py-12 px-4 font-sans ${currentTheme.bg}`}>
+    <div className={`min-h-screen flex flex-col items-center px-4 font-sans ${currentTheme.bg} transition-colors duration-500`}>
       
-      {/* Dynamic Pattern */}
+      {/* Background Pattern */}
       <div className="fixed inset-0 h-full w-full pointer-events-none z-0 opacity-[0.4]" 
            style={{ backgroundImage: currentTheme.pattern, backgroundSize: '24px 24px' }}>
       </div>
 
-      <main className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-200/60">
+      {/* NEW BRAND HEADER */}
+      <header className="relative z-10 w-full max-w-md flex justify-between items-center py-6">
+        <Link href="/" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
+           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm ${currentTheme.header}`}>
+              W
+            </div>
+            <span className={`font-bold text-xl tracking-tight ${currentTheme.text}`}>WhoIn.uk</span>
+        </Link>
+      </header>
+
+      <main className="relative z-10 w-full max-w-md bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden border border-white/50 ring-1 ring-black/5 mb-12">
         
-        {/* HEADER: Dynamic Color */}
-        <div className={`${currentTheme.accent} text-white p-8 text-center relative`}>
+        {/* EVENT HEADER */}
+        <div className={`${currentTheme.header} text-white p-8 text-center relative transition-colors duration-500`}>
           {isOrganizer && (
             <div className="absolute top-4 right-4">
-              <ManageButton eventId={event.id} />
+              <div className="[&>a>button]:bg-white/10 [&>a>button]:text-white [&>a>button]:border-white/20 [&>a>button]:hover:bg-white/20">
+                <ManageButton eventId={event.id} />
+              </div>
             </div>
           )}
           <h1 className="text-3xl font-bold mb-4 leading-tight">{event.title}</h1>
           
-          <div className="flex flex-col items-center gap-2 text-slate-300 text-sm font-medium">
-            <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full">
-              <Calendar className="w-4 h-4 text-blue-400" />
+          <div className="flex flex-col items-center gap-2 text-white/80 text-sm font-medium">
+            <div className="flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
+              <Calendar className="w-3.5 h-3.5" />
               <span>{formatDate(event.date)}</span>
             </div>
-            <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full">
-              <MapPin className="w-4 h-4 text-red-400" />
+            <div className="flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
+              <MapPin className="w-3.5 h-3.5" />
               <span>{event.location}</span>
             </div>
           </div>
@@ -128,20 +142,65 @@ export default async function EventPage({
 
         <div className="p-6 sm:p-8 space-y-8">
           
-          {/* Organizer Share Card (Only visible to Admin) */}
-          {isOrganizer && (
-            <div className="mb-6">
-              <ShareCard
-                eventId={event.id}
-                shortCode={event.short_code || undefined}
-                eventTitle={event.title}
-                eventDate={event.date}
-                eventLocation={event.location}
-              />
+          {/* CUSTOM NOTE (WORD ART STYLE) */}
+          {event.description && (
+            <div className="relative py-6 px-4 text-center group perspective-1000">
+               
+               {/* 1. The Rotate/Hover Effect Container */}
+               <div className="relative inline-block transform transition-transform duration-500 hover:scale-105 hover:rotate-2 cursor-default">
+                  
+                  {/* 2. Background 'Highlighter' Brush Stroke */}
+                  <div className={`absolute -inset-2 opacity-20 blur-lg rounded-[50%] ${
+                      event.theme === 'christmas' ? 'bg-red-500' :
+                      event.theme === 'diwali' ? 'bg-amber-400' :
+                      event.theme === 'birthday' ? 'bg-blue-400' :
+                      'bg-pink-400'
+                  }`}></div>
+
+                  {/* 3. The Text (Gradient + 3D Shadow) */}
+                  <p className="relative text-2xl sm:text-3xl font-black leading-tight tracking-tight drop-shadow-sm font-[family-name:var(--font-calistoga)]"
+                     style={{
+                       background: event.theme === 'christmas' 
+                         ? 'linear-gradient(to bottom right, #ef4444, #b91c1c)' // Red Gradient
+                         : event.theme === 'diwali'
+                         ? 'linear-gradient(to bottom right, #d97706, #b45309)' // Gold Gradient
+                         : event.theme === 'birthday'
+                         ? 'linear-gradient(to bottom right, #2563eb, #1e40af)' // Blue Gradient
+                         : 'linear-gradient(to bottom right, #1f2937, #000000)', // Black Gradient
+                       WebkitBackgroundClip: 'text',
+                       WebkitTextFillColor: 'transparent',
+                       filter: 'drop-shadow(2px 4px 0px rgba(0,0,0,0.05))' // The "Sticker" Shadow
+                     }}
+                  >
+                    " {event.description} "
+                  </p>
+                  
+                  {/* 4. Little Decoration Emoji (Based on theme) */}
+                  <div className="absolute -right-6 -top-6 text-4xl animate-bounce duration-[2000ms]">
+                    {event.theme === 'christmas' ? '🎅' : 
+                     event.theme === 'diwali' ? '🪔' : 
+                     event.theme === 'birthday' ? '🎈' : '📣'}
+                  </div>
+               </div>
             </div>
           )}
 
-          {/* THE FORM */}
+          {/* Organizer Share Control */}
+          {isOrganizer && (
+            <div className="mb-8 p-1 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">Organizer Controls</p>
+                <ShareCard
+                  eventId={event.id}
+                  shortCode={event.short_code}
+                  eventTitle={event.title}
+                  eventDate={event.date}
+                  eventLocation={event.location}
+                />
+              </div>
+            </div>
+          )}
+
           <GuestForm
             eventId={event.id}
             pricePerAdult={event.price_per_adult || 0}
@@ -149,23 +208,18 @@ export default async function EventPage({
             bankDetails={event.bank_details || ''}
           />
 
-          {/* GUEST LIST (Simple "Who's coming") */}
           {guests && guests.length > 0 && (
             <div className="pt-8 border-t border-dashed border-slate-200">
-              <div className="flex items-center justify-center gap-2 mb-6 text-slate-400">
+              <div className={`flex items-center justify-center gap-2 mb-6 ${currentTheme.text} opacity-60`}>
                 <Users className="w-4 h-4" />
-                <span className="text-sm font-semibold uppercase tracking-wider">Who is in? ({guests.length})</span>
+                <span className="text-sm font-bold uppercase tracking-wider">Who is in? ({guests.length})</span>
               </div>
-              
               <div className="flex flex-wrap justify-center gap-2">
                 {guests.map((guest) => (
-                  <span 
-                    key={guest.id} 
-                    className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-slate-50 text-slate-700 border border-slate-100"
-                  >
+                  <span key={guest.id} className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-slate-100/80 text-slate-700 border border-slate-200">
                     {guest.name}
                     {(guest.adult_count + guest.kid_count) > 1 && (
-                      <span className="ml-1.5 text-xs bg-slate-200 text-slate-600 px-1.5 rounded-full">
+                      <span className="ml-1.5 text-[10px] font-bold bg-slate-300 text-slate-600 px-1.5 py-0.5 rounded-full">
                         +{guest.adult_count + guest.kid_count - 1}
                       </span>
                     )}
@@ -177,7 +231,7 @@ export default async function EventPage({
         </div>
       </main>
       
-      <div className="mt-12 opacity-60 hover:opacity-100 transition-opacity">
+      <div className="opacity-60 hover:opacity-100 transition-opacity pb-8">
         <Footer />
       </div>
     </div>

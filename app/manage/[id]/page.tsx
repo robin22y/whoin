@@ -12,6 +12,7 @@ import {
 import { ExportButton } from '@/components/export-button'
 import { ShareCard } from '@/components/share-card'
 import { LogoutButton } from '@/components/logout-button'
+import { EditEventForm } from '@/components/edit-event-form'
 import { redirect } from 'next/navigation'
 import Link from 'next/link' // <--- NEW IMPORT
 import { Button } from '@/components/ui/button' // <--- NEW IMPORT
@@ -149,6 +150,9 @@ export default async function ManageEventPage({
                 </p>
               </div>
             </div>
+
+            {/* EDIT FORM */}
+            <EditEventForm event={event} />
 
             {/* SHARE CARD */}
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">

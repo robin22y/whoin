@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { Sparkles, Gift, Flame, PartyPopper } from 'lucide-react'
 
-// Helper to generate short code
 function generateShortCode() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   let result = ''
@@ -23,8 +23,9 @@ export function EventCreator() {
   const [pricePerAdult, setPricePerAdult] = useState('')
   const [pricePerChild, setPricePerChild] = useState('')
   const [bankDetails, setBankDetails] = useState('')
+  const [description, setDescription] = useState('')
+  const [theme, setTheme] = useState('minimal') // Default Theme
   const [isLoading, setIsLoading] = useState(false)
-  const [theme, setTheme] = useState('minimal')
   const router = useRouter()
   const supabase = createClient()
 
@@ -44,8 +45,9 @@ export function EventCreator() {
         price_per_adult: parseFloat(pricePerAdult) || 0,
         price_per_child: parseFloat(pricePerChild) || 0,
         bank_details: bankDetails,
+        description: description,
         short_code: shortCode,
-        theme: theme,
+        theme: theme, // <--- SAVING THE THEME
       }
 
       if (!user) {
@@ -69,21 +71,14 @@ export function EventCreator() {
         localStorage.setItem(`event_${data.id}_key`, data.management_key)
         const myEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
         if (!myEvents.find((e: any) => e.id === data.id)) {
-          myEvents.push({
-            id: data.id,
-            title: eventData.title,
-            date: combinedDateTime,
-            location: eventData.location,
-            management_key: data.management_key,
-            created_at: new Date().toISOString(),
-          })
+          myEvents.push({ id: data.id, title: eventTitle, date: combinedDateTime, location, management_key: data.management_key, created_at: new Date().toISOString() })
           localStorage.setItem('my_events', JSON.stringify(myEvents))
         }
       }
 
       router.push(`/manage/${data.id}?key=${data.management_key}`)
     } catch (error) {
-      console.error('Error creating event:', error)
+      console.error('Error:', error)
       alert('Failed to create event.')
     } finally {
       setIsLoading(false)
@@ -91,173 +86,107 @@ export function EventCreator() {
   }
 
   const inputClass = "inline-block bg-transparent border-b-2 border-gray-300 focus:border-black outline-none px-1 py-0 placeholder:text-gray-300 text-center mx-1 font-bold text-gray-900 transition-all duration-300"
-  
-  // Animation class for revealing new sections
   const revealClass = "animate-in fade-in slide-in-from-bottom-2 duration-700"
 
+  // Define the themes visually
+  const themeOptions = [
+    { id: 'minimal', color: 'bg-slate-100 border-slate-300', icon: Sparkles, label: 'Clean' },
+    { id: 'birthday', color: 'bg-blue-100 border-blue-300', icon: PartyPopper, label: 'Party' },
+    { id: 'christmas', color: 'bg-red-100 border-red-300', icon: Gift, label: 'Xmas' },
+    { id: 'diwali', color: 'bg-amber-100 border-amber-300', icon: Flame, label: 'Festive' },
+  ]
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto py-6 px-2 sm:px-4">
+    <div className="max-w-3xl mx-auto py-6 px-2 sm:px-4">
       
-      {/* THEME PICKER */}
-      <div className="flex justify-center gap-4 mb-8">
-        <button
-          type="button"
-          onClick={() => setTheme('minimal')}
-          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all ${theme === 'minimal' ? 'border-black scale-110 bg-slate-100' : 'border-transparent hover:bg-slate-50'}`}
-          title="Minimal"
-        >
-          ⚪
-        </button>
-        <button
-          type="button"
-          onClick={() => setTheme('christmas')}
-          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all ${theme === 'christmas' ? 'border-red-500 scale-110 bg-red-50' : 'border-transparent hover:bg-red-50/50'}`}
-          title="Christmas"
-        >
-          🎄
-        </button>
-        <button
-          type="button"
-          onClick={() => setTheme('diwali')}
-          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all ${theme === 'diwali' ? 'border-amber-500 scale-110 bg-amber-50' : 'border-transparent hover:bg-amber-50/50'}`}
-          title="Celebration"
-        >
-          🪔
-        </button>
-        <button
-          type="button"
-          onClick={() => setTheme('birthday')}
-          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all ${theme === 'birthday' ? 'border-blue-500 scale-110 bg-blue-50' : 'border-transparent hover:bg-blue-50/50'}`}
-          title="Birthday"
-        >
-          🎂
-        </button>
+      {/* NEW THEME SELECTOR (Floating Pill) */}
+      <div className="flex justify-center mb-10">
+        <div className="inline-flex items-center gap-1 p-1.5 bg-slate-50 border border-slate-200 rounded-full shadow-sm">
+          {themeOptions.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTheme(t.id)}
+              className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${t.color} ${
+                theme === t.id 
+                  ? 'ring-2 ring-offset-2 ring-black scale-110 shadow-md z-10' 
+                  : 'opacity-60 hover:opacity-100 hover:scale-105'
+              }`}
+              title={t.label}
+            >
+              <t.icon className={`w-4 h-4 ${theme === t.id ? 'text-black' : 'text-slate-600'}`} />
+            </button>
+          ))}
+        </div>
       </div>
-      
-      <div className="text-3xl md:text-4xl leading-[1.8] font-medium text-gray-400 transition-all">
-        
-        {/* STEP 1: Always Visible */}
-        <span className="text-gray-600">I am organizing </span>
-        <input
-          type="text"
-          placeholder="a birthday party"
-          value={eventTitle}
-          onChange={(e) => setEventTitle(e.target.value)}
-          required
-          autoFocus
-          className={`${inputClass} w-[300px] sm:w-auto`}
-        />
 
-        {/* STEP 2: Reveals when Title is typed */}
-        {eventTitle.length > 2 && (
-          <span className={revealClass}>
-            <span> on </span>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className={`${inputClass} min-w-[160px]`}
-            />
-          </span>
-        )}
-        
-        {/* STEP 3: Reveals when Date is picked */}
-        {date && (
-          <span className={revealClass}>
-            <span> at </span>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              required
-              className={`${inputClass} min-w-[110px]`}
-            />
-          </span>
-        )}
-        
-        {/* STEP 4: Reveals when Time is picked */}
-        {time && (
-          <span className={revealClass}>
-            <span> at </span>
-            <input
-              type="text"
-              placeholder="Location / Address"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-              className={`${inputClass} w-full sm:w-[350px]`}
-            />
-            <span>.</span>
-          </span>
-        )}
+      <form onSubmit={handleSubmit} className="transition-[height] duration-500 ease-in-out">
+        <div className="text-3xl md:text-4xl leading-[1.8] font-medium text-gray-400 transition-all">
+          
+          <span className="text-gray-600">I am organizing </span>
+          <input type="text" placeholder="a birthday party" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required autoFocus className={`${inputClass} w-[300px] sm:w-auto`} />
 
-        {/* STEP 5: The "Optional" Money Section - Reveals after Location */}
+          {eventTitle.length > 2 && (
+            <span className={revealClass}>
+              <span> on </span>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className={`${inputClass} min-w-[160px]`} />
+            </span>
+          )}
+          
+          {date && (
+            <span className={revealClass}>
+              <span> at </span>
+              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className={`${inputClass} min-w-[110px]`} />
+            </span>
+          )}
+          
+          {time && (
+            <span className={revealClass}>
+              <span> at </span>
+              <input type="text" placeholder="Location / Address" value={location} onChange={(e) => setLocation(e.target.value)} required className={`${inputClass} w-full sm:w-[350px]`} />
+              <span>.</span>
+            </span>
+          )}
+
+          {location.length > 3 && (
+            <div className={`mt-8 space-y-8 ${revealClass}`}>
+               <div className="text-xl md:text-2xl border-l-4 border-slate-200 pl-4 py-2">
+                  <span className="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Add a personal note (Optional)</span>
+                  <span className="text-gray-500">"</span>
+                  <input type="text" placeholder="Can't wait to see you all! 🎉" value={description} onChange={(e) => setDescription(e.target.value)} className={`${inputClass} w-full sm:w-[80%] text-left`} />
+                  <span className="text-gray-500">"</span>
+               </div>
+
+               <div className="pt-4 border-t border-dashed border-gray-200">
+                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Ticket Price (Optional)</span>
+                  <span>Tickets are £</span>
+                  <input type="number" step="0.01" placeholder="0" value={pricePerAdult} onChange={(e) => setPricePerAdult(e.target.value)} className={`${inputClass} w-24`} />
+                  <span> for adults.</span>
+                  
+                  {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
+                      <span className={revealClass}>
+                         <br/>And £
+                         <input type="number" step="0.01" placeholder="0" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className={`${inputClass} w-24`} />
+                         <span> for kids.</span>
+                         <div className="h-4"></div>
+                         <span>Send money to: </span>
+                         <input type="text" placeholder="Sort Code & Account" value={bankDetails} onChange={(e) => setBankDetails(e.target.value)} className={`${inputClass} w-full sm:w-[400px]`} />
+                      </span>
+                  )}
+               </div>
+            </div>
+          )}
+
+        </div>
+
         {location.length > 3 && (
-          <div className={`mt-8 pt-8 border-t border-dashed border-gray-200 ${revealClass}`}>
-             <span className="text-2xl text-gray-500 block mb-4">👇 Optional: Collect Money</span>
-             
-             <span>Tickets are </span>
-             <span className="whitespace-nowrap">
-               £
-               <input
-                 type="number"
-                 step="0.01"
-                 placeholder="0"
-                 value={pricePerAdult}
-                 onChange={(e) => setPricePerAdult(e.target.value)}
-                 className={`${inputClass} w-24 text-3xl`}
-               />
-             </span>
-             <span> for adults.</span>
-             
-             {/* Show Kids price only if Adults price is set */}
-             {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
-                <span className={revealClass}>
-                   <br/>And 
-                   <span className="whitespace-nowrap ml-2">
-                    £
-                    <input
-                      type="number"
-                      step="0.01"
-                      placeholder="0"
-                      value={pricePerChild}
-                      onChange={(e) => setPricePerChild(e.target.value)}
-                      className={`${inputClass} w-24 text-3xl`}
-                    />
-                   </span>
-                   <span> for kids.</span>
-                   
-                   <div className="h-6"></div>
-                   <span>Send money to: </span>
-                   <input
-                     type="text"
-                     placeholder="Sort Code & Account"
-                     value={bankDetails}
-                     onChange={(e) => setBankDetails(e.target.value)}
-                     className={`${inputClass} w-full sm:w-[400px]`}
-                   />
-                   <span>.</span>
-                </span>
-             )}
+          <div className={`mt-12 text-center ${revealClass}`}>
+            <Button type="submit" disabled={isLoading} size="lg" className="min-w-[240px] text-xl h-16 rounded-full bg-black text-white shadow-xl hover:scale-105 transition-transform">
+              {isLoading ? 'Creating...' : '🚀 Create Event Link'}
+            </Button>
           </div>
         )}
-
-      </div>
-
-      {/* SUBMIT BUTTON - Only appears when minimum fields are ready */}
-      {location.length > 3 && (
-        <div className={`mt-12 text-center ${revealClass}`}>
-          <Button 
-            type="submit" 
-            disabled={isLoading} 
-            size="lg"
-            className="min-w-[240px] text-xl h-16 rounded-full bg-black text-white shadow-xl hover:scale-105 transition-transform"
-          >
-            {isLoading ? 'Creating...' : '🚀 Create Event Link'}
-          </Button>
-        </div>
-      )}
-    </form>
+      </form>
+    </div>
   )
 }
