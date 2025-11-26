@@ -39,11 +39,20 @@ export function EventCreator() {
     try {
       // Logic Validation: Check if date/time is in the past
       if (date) {
-        const selectedDate = new Date(date)
-        const selectedDateTime = time 
-          ? new Date(`${date}T${time}:00`)
-          : new Date(date)
         const now = new Date()
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const selectedDateOnly = new Date(date)
+        selectedDateOnly.setHours(0, 0, 0, 0)
+        
+        let selectedDateTime: Date
+        if (time) {
+          const [hours, minutes] = time.split(':').map(Number)
+          selectedDateTime = new Date(date)
+          selectedDateTime.setHours(hours, minutes, 0, 0)
+        } else {
+          selectedDateTime = new Date(selectedDateOnly)
+          selectedDateTime.setHours(23, 59, 59, 999) // End of day if no time specified
+        }
 
         // If the selected date is in the past, block it
         if (selectedDateTime < now) {
@@ -140,7 +149,14 @@ export function EventCreator() {
           {eventTitle.length > 2 && (
             <span className={revealClass}>
               <span> on </span>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className={`${inputClass} min-w-[160px]`} />
+              <input 
+                type="date" 
+                value={date} 
+                onChange={(e) => setDate(e.target.value)} 
+                required 
+                min={new Date().toISOString().split('T')[0]}
+                className={`${inputClass} min-w-[160px]`} 
+              />
             </span>
           )}
           
