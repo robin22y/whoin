@@ -77,10 +77,10 @@ export default async function ManageEventPage({
           {/* Share Card */}
           <ShareCard 
             eventId={event.id}
+            shortCode={event.short_code} // <--- Pass it here
             eventTitle={event.title}
             eventDate={event.date}
             eventLocation={event.location}
-            shortCode={event.short_code || undefined}
           />
 
           {/* Summary Card */}

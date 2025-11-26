@@ -27,18 +27,16 @@ export default async function EventPage({
   const { id } = await params
   const supabase = await createClient()
 
-  // Check if id is a UUID or short code
+  // 1. Check if the ID is a UUID (Long ID)
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
-  // Build query based on whether id is UUID or short code
-  let query = supabase
-    .from('events')
-    .select('id, title, date, location, bank_details, price_per_adult, price_per_child, user_id, created_at, updated_at, short_code')
+  // 2. Build the query based on the type of ID
+  let query = supabase.from('events').select('id, short_code, title, date, location, bank_details, price_per_adult, price_per_child, user_id, created_at')
 
   if (isUUID) {
-    query = query.eq('id', id)
+    query = query.eq('id', id) // Old links work
   } else {
-    query = query.eq('short_code', id)
+    query = query.eq('short_code', id) // New short links work
   }
 
   const { data: event, error } = await query.single()

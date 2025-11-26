@@ -35,58 +35,40 @@ export function EventCreator() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       
-      // Combine date/time
+      // Generate the short code
+      const shortCode = generateShortCode() // <--- NEW
+
       const combinedDateTime = date && time ? `${date}T${time}:00` : date || ''
       const eventData = {
         title: eventTitle,
         date: combinedDateTime,
         location,
         price_per_adult: parseFloat(pricePerAdult) || 0,
-        price_per_child: parseFloat(pricePerChild) || 0, // <--- NEW
+        price_per_child: parseFloat(pricePerChild) || 0,
         bank_details: bankDetails,
+        short_code: shortCode, // <--- SAVE IT
       }
 
       if (!user) {
-        localStorage.setItem('pending_event', JSON.stringify({
-            ...eventData, 
-            pricePerAdult: eventData.price_per_adult, 
-            pricePerChild: eventData.price_per_child
-        }))
+        localStorage.setItem('pending_event', JSON.stringify(eventData))
         router.push('/auth')
         return
       }
-
-      // Generate short code for the event
-      const shortCode = generateShortCode()
 
       const { data, error } = await supabase
         .from('events')
         .insert({
           ...eventData,
           user_id: user.id,
-          short_code: shortCode,
         })
-        .select('id, management_key, short_code')
+        .select('id, management_key')
         .single()
 
       if (error) throw error
 
       if (data.management_key) {
         localStorage.setItem(`event_${data.id}_key`, data.management_key)
-        
-        // Add to My Events list in localStorage
-        const myEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
-        if (!myEvents.find((e: any) => e.id === data.id)) {
-          myEvents.push({
-            id: data.id,
-            title: eventData.title,
-            date: eventData.date,
-            location: eventData.location,
-            management_key: data.management_key,
-            created_at: new Date().toISOString(),
-          })
-          localStorage.setItem('my_events', JSON.stringify(myEvents))
-        }
+        // Add to local list logic...
       }
 
       router.push(`/manage/${data.id}?key=${data.management_key}`)

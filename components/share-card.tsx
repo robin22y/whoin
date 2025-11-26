@@ -10,19 +10,19 @@ import { Copy, MessageCircle } from 'lucide-react'
 
 interface ShareCardProps {
   eventId: string
+  shortCode?: string // <--- Add this optional prop
   eventTitle: string
   eventDate: string
   eventLocation: string
-  shortCode?: string
 }
 
-export function ShareCard({ eventId, eventTitle, eventDate, eventLocation, shortCode }: ShareCardProps) {
+export function ShareCard({ eventId, shortCode, eventTitle, eventDate, eventLocation }: ShareCardProps) {
   const [includeCalendar, setIncludeCalendar] = useState(false)
-  // Use shortCode if available, otherwise fall back to eventId
-  const linkId = shortCode || eventId
+  
+  // Logic: Use Short Code if available, otherwise fallback to UUID
   const eventLink = typeof window !== 'undefined' 
-    ? `${window.location.origin}/e/${linkId}`
-    : `whoin.uk/e/${linkId}`
+    ? `${window.location.origin}/e/${shortCode || eventId}`
+    : `whoin.uk/e/${shortCode || eventId}`
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-GB', {
