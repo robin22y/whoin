@@ -112,7 +112,7 @@ export default function Home() {
         />
       </main>
 
-      {/* SEO FAQ SECTION */}
+      {/* SEO FAQ SECTION (Updated for Inclusivity) */}
       <div className="w-full max-w-3xl mt-24 mb-12 px-6 text-left">
         <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">
           Frequently Asked Questions
@@ -121,12 +121,13 @@ export default function Home() {
         <div className="space-y-4">
           <details className="group bg-white/60 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 p-4 open:pb-6 cursor-pointer">
             <summary className="flex items-center justify-between font-semibold text-slate-700 list-none select-none">
-              Is this tool really free for UK community events?
+              Is this tool really free for community events?
               <span className="transition group-open:rotate-180">▼</span>
             </summary>
             <p className="text-slate-500 mt-4 leading-relaxed">
-              Yes! WhoIn.uk is a 100% free RSVP tool designed for UK communities. 
-              It is perfect for collecting sign-ups for <strong>Onam Sadhyas, Diwali Parties, Christmas Dinners</strong>, and local <strong>Cricket Matches</strong>.
+              Yes! WhoIn.uk is a 100% free sign-up tool designed for all communities. 
+              It is perfect for organizing <strong>Sunday Roasts, 5-a-side Football, Pub Quizzes, School Fetes</strong>, as well as <strong>Diwali Parties and Christmas Dinners</strong>.
+              We don't charge booking fees for free events.
             </p>
           </details>
 
@@ -136,7 +137,20 @@ export default function Home() {
               <span className="transition group-open:rotate-180">▼</span>
             </summary>
             <p className="text-slate-500 mt-4 leading-relaxed">
-              No. Your guests just click the link (which looks great on <strong>WhatsApp</strong>), type their name, and click "I'm In". It works on any phone, no login required.
+              No. "Downloading an app" kills participation. 
+              Your guests just click the link (which works perfectly on <strong>WhatsApp</strong>), type their name, and click "I'm In". 
+              It works on any phone, no login required.
+            </p>
+          </details>
+          
+           <details className="group bg-white/60 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 p-4 open:pb-6 cursor-pointer">
+            <summary className="flex items-center justify-between font-semibold text-slate-700 list-none select-none">
+              Can I track payments?
+              <span className="transition group-open:rotate-180">▼</span>
+            </summary>
+            <p className="text-slate-500 mt-4 leading-relaxed">
+              Yes. If you are collecting money for a <strong>group gift, sports pitch hire, or dinner</strong>, you can display your Sort Code. 
+              We calculate the total cost per family (Adults vs Kids) automatically.
             </p>
           </details>
         </div>

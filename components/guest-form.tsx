@@ -20,7 +20,7 @@ export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }
   const [name, setName] = useState('')
   const [adultCount, setAdultCount] = useState(1)
   const [kidCount, setKidCount] = useState(0)
-  const [consent, setConsent] = useState(false)
+  const [saveToDevice, setSaveToDevice] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [existingGuest, setExistingGuest] = useState<any>(null)
@@ -97,10 +97,6 @@ export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!consent) {
-      alert('Please agree to share your name for this event.')
-      return
-    }
     setIsLoading(true)
     try {
       const { data, error } = await supabase
@@ -119,8 +115,14 @@ export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }
 
       if (error) throw error
 
+      // ONLY save to LocalStorage if they checked the box (PECR Compliance)
       if (typeof window !== 'undefined') {
-        localStorage.setItem('user_name', name.trim())
+        if (saveToDevice) {
+          localStorage.setItem('user_name', name.trim())
+        } else {
+          // Optional: Clear it if they uncheck it (good privacy practice)
+          localStorage.removeItem('user_name')
+        }
       }
       setExistingGuest(data)
       alert('Counted! Thanks for signing up.')
@@ -232,25 +234,33 @@ export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }
 
         {/* SUBMIT ACTION */}
         <div className="space-y-4 pt-2">
-          <div className="flex items-center justify-center gap-2">
+          {/* GDPR / PECR Checkbox - OPTIONAL now */}
+          <div className="flex items-start space-x-3 pt-2 justify-center">
             <Checkbox
-              id="consent"
-              checked={consent}
-              onCheckedChange={(checked) => setConsent(checked === true)}
-              required
-              className="border-slate-300 data-[state=checked]:bg-black data-[state=checked]:border-black"
+              id="save-info"
+              checked={saveToDevice}
+              onCheckedChange={(checked) => setSaveToDevice(checked === true)}
+              className="mt-1 border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
             />
-            <Label htmlFor="consent" className="text-xs text-slate-500 cursor-pointer select-none">
-              I'm okay with sharing my name here
-            </Label>
+            <div className="grid gap-1.5 leading-none text-left">
+              <Label
+                htmlFor="save-info"
+                className="text-sm text-slate-600 font-medium cursor-pointer"
+              >
+                Remember me for next time
+              </Label>
+              <p className="text-[11px] text-slate-400">
+                Saves your name on this device for future RSVPs.
+              </p>
+            </div>
           </div>
 
           <Button
             type="submit"
-            disabled={isLoading || !consent}
+            disabled={isLoading}
             className="w-full h-14 text-lg font-bold rounded-xl bg-black hover:bg-slate-800 text-white shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            {isLoading ? 'Saving...' : (existingGuest ? "Update My Status" : "Count Me In! ✋")}
+            {isLoading ? 'Saving...' : "I'm In! ✅"}
           </Button>
         </div>
       </form>

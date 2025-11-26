@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Sparkles, Gift, Flame, PartyPopper } from 'lucide-react'
+import { Sparkles, Gift, Flame, PartyPopper, CreditCard } from 'lucide-react'
 
 function generateShortCode() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
@@ -22,9 +22,12 @@ export function EventCreator() {
   const [location, setLocation] = useState('')
   const [pricePerAdult, setPricePerAdult] = useState('')
   const [pricePerChild, setPricePerChild] = useState('')
+  
+  // Flexible Payment Details (Works for UPI, IBAN, Sort Code, etc.)
   const [bankDetails, setBankDetails] = useState('')
+
   const [description, setDescription] = useState('')
-  const [theme, setTheme] = useState('minimal') // Default Theme
+  const [theme, setTheme] = useState('minimal')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -44,10 +47,10 @@ export function EventCreator() {
         location,
         price_per_adult: parseFloat(pricePerAdult) || 0,
         price_per_child: parseFloat(pricePerChild) || 0,
-        bank_details: bankDetails,
+        bank_details: bankDetails, // Saves whatever they typed (UPI, IBAN, etc.)
         description: description,
         short_code: shortCode,
-        theme: theme, // <--- SAVING THE THEME
+        theme: theme,
       }
 
       if (!user) {
@@ -58,10 +61,7 @@ export function EventCreator() {
 
       const { data, error } = await supabase
         .from('events')
-        .insert({
-          ...eventData,
-          user_id: user.id,
-        })
+        .insert({ ...eventData, user_id: user.id })
         .select('id, management_key')
         .single()
 
@@ -87,8 +87,7 @@ export function EventCreator() {
 
   const inputClass = "inline-block bg-transparent border-b-2 border-gray-300 focus:border-black outline-none px-1 py-0 placeholder:text-gray-300 text-center mx-1 font-bold text-gray-900 transition-all duration-300"
   const revealClass = "animate-in fade-in slide-in-from-bottom-2 duration-700"
-
-  // Define the themes visually
+  
   const themeOptions = [
     { id: 'minimal', color: 'bg-slate-100 border-slate-300', icon: Sparkles, label: 'Clean' },
     { id: 'birthday', color: 'bg-blue-100 border-blue-300', icon: PartyPopper, label: 'Party' },
@@ -99,7 +98,6 @@ export function EventCreator() {
   return (
     <div className="max-w-3xl mx-auto py-6 px-2 sm:px-4">
       
-      {/* NEW THEME SELECTOR (Floating Pill) */}
       <div className="flex justify-center mb-10">
         <div className="inline-flex items-center gap-1 p-1.5 bg-slate-50 border border-slate-200 rounded-full shadow-sm">
           {themeOptions.map((t) => (
@@ -108,11 +106,8 @@ export function EventCreator() {
               type="button"
               onClick={() => setTheme(t.id)}
               className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${t.color} ${
-                theme === t.id 
-                  ? 'ring-2 ring-offset-2 ring-black scale-110 shadow-md z-10' 
-                  : 'opacity-60 hover:opacity-100 hover:scale-105'
+                theme === t.id ? 'ring-2 ring-offset-2 ring-black scale-110 shadow-md z-10' : 'opacity-60 hover:opacity-100 hover:scale-105'
               }`}
-              title={t.label}
             >
               <t.icon className={`w-4 h-4 ${theme === t.id ? 'text-black' : 'text-slate-600'}`} />
             </button>
@@ -122,9 +117,8 @@ export function EventCreator() {
 
       <form onSubmit={handleSubmit} className="transition-[height] duration-500 ease-in-out">
         <div className="text-3xl md:text-4xl leading-[1.8] font-medium text-gray-400 transition-all">
-          
           <span className="text-gray-600">I am organizing </span>
-          <input type="text" placeholder="Onam Celebration" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required autoFocus className={`${inputClass} w-[300px] sm:w-auto`} />
+          <input type="text" placeholder="a birthday party" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required autoFocus className={`${inputClass} w-[300px] sm:w-auto`} />
 
           {eventTitle.length > 2 && (
             <span className={revealClass}>
@@ -150,13 +144,12 @@ export function EventCreator() {
 
           {location.length > 3 && (
             <div className={`mt-8 space-y-8 ${revealClass}`}>
-               {/* CUSTOM NOTE SECTION */}
                <div className="text-xl md:text-2xl border-l-4 border-slate-200 pl-4 py-2 bg-slate-50/50 rounded-r-xl">
                   <span className="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Personal Note (Optional)</span>
                   <span className="text-gray-400 font-serif italic">"</span>
                   <input 
                     type="text" 
-                    placeholder="Adichu polikkam makkale! 🎉" 
+                    placeholder="Can't wait to celebrate with you all! 🥳" 
                     value={description} 
                     onChange={(e) => setDescription(e.target.value)} 
                     className={`${inputClass} w-full sm:w-[80%] text-left font-normal not-italic`} 
@@ -164,24 +157,46 @@ export function EventCreator() {
                   <span className="text-gray-400 font-serif italic">"</span>
                </div>
 
-               <div className="pt-4 border-t border-dashed border-gray-200">
-                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Tickets (Optional)</span>
-                  <span>Adults: £</span>
+               <div className="pt-8 border-t border-dashed border-gray-200">
+                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Ticket Price (Optional)</span>
+                  <span>Tickets are £</span>
                   <input type="number" step="0.01" placeholder="0" value={pricePerAdult} onChange={(e) => setPricePerAdult(e.target.value)} className={`${inputClass} w-24`} />
+                  <span> for adults.</span>
                   
                   {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
-                      <span className={revealClass}>
-                         <br/>Kids: £
-                         <input type="number" step="0.01" placeholder="0" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className={`${inputClass} w-24`} />
-                         <div className="h-4"></div>
-                         <span>Pay to: </span>
-                         <input type="text" placeholder="Sort Code & Account" value={bankDetails} onChange={(e) => setBankDetails(e.target.value)} className={`${inputClass} w-full sm:w-[400px]`} />
-                      </span>
+                      <div className={revealClass}>
+                         <span className="inline-block mt-2">
+                           & £
+                           <input type="number" step="0.01" placeholder="0" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className={`${inputClass} w-24`} />
+                           <span> for kids.</span>
+                         </span>
+                         
+                         {/* NEW GLOBAL PAYMENT CARD UI */}
+                         <div className="mt-8 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm max-w-lg">
+                            <div className="flex items-center gap-2 mb-4 text-slate-500">
+                               <CreditCard className="w-4 h-4" />
+                               <span className="text-xs font-bold uppercase tracking-wider">Payment Details (For Guests)</span>
+                            </div>
+                            
+                            <div>
+                               <label className="block text-xs font-medium text-slate-400 mb-2 ml-1">
+                                 Enter Bank Details, UPI ID, IBAN, or Pay ID
+                               </label>
+                               <textarea 
+                                 rows={3}
+                                 placeholder={`Examples:\n• Sort: 20-00-00 | Acc: 12345678\n• IBAN: GB33 WEST...\n• UPI: name@okhdfcbank`}
+                                 value={bankDetails}
+                                 onChange={(e) => setBankDetails(e.target.value)}
+                                 className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-base font-medium focus:ring-2 focus:ring-black focus:outline-none transition-all resize-none"
+                               />
+                            </div>
+                         </div>
+
+                      </div>
                   )}
                </div>
             </div>
           )}
-
         </div>
 
         {location.length > 3 && (

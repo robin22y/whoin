@@ -18,10 +18,17 @@ const calistoga = Calistoga({
 
 export const metadata: Metadata = {
   title: "WhoIn.uk - Simple Sign-up",
-  description: "Extreme simple sign-up tool for Community Events",
+  description: "The simplest sign-up tool for community events. Create WhatsApp-friendly invite links in 30 seconds.",
   keywords: [
-    "WhatsApp RSVP", "Event Planner UK", "Potluck Signup", 
-    "Onam Celebration UK", "Diwali Party Planner", "Cricket Match Organizer"
+    "WhatsApp RSVP", 
+    "Event Planner UK", 
+    "Potluck Signup", 
+    "5-a-side Football Organizer",
+    "Pub Quiz Team Sheet",
+    "School Fete Volunteer List",
+    "Sunday Roast Invite",
+    "Diwali Party Planner", 
+    "Christmas Dinner List"
   ],
   manifest: "/manifest.json",
   themeColor: "#000000",
