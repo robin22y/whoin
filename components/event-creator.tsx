@@ -6,6 +6,16 @@ import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
+// Helper function to generate a random 6-character alphanumeric string (lowercase)
+function generateShortCode(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
 export function EventCreator() {
   const [eventTitle, setEventTitle] = useState('')
   const [date, setDate] = useState('')
@@ -46,7 +56,10 @@ export function EventCreator() {
       // Combine date and time into ISO timestamp
       const combinedDateTime = date && time ? `${date}T${time}:00` : date || ''
 
-      // Create event (select management_key only for creator)
+      // Generate short code for the event
+      const shortCode = generateShortCode()
+
+      // Create event (select management_key and short_code for creator)
       const { data, error } = await supabase
         .from('events')
         .insert({
@@ -56,8 +69,9 @@ export function EventCreator() {
           price_per_adult: parseFloat(pricePerAdult) || 0,
           bank_details: bankDetails,
           user_id: user.id,
+          short_code: shortCode,
         })
-        .select('id, management_key, title, date, location')
+        .select('id, management_key, short_code, title, date, location')
         .single()
 
       if (error) throw error

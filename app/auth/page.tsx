@@ -89,9 +89,9 @@ export default function AuthPage() {
     setMessage('')
 
     try {
-      // IMPORTANT: No emailRedirectTo options here. This forces Code mode.
+      // Removing 'options' tells Supabase to send a CODE, not a LINK.
       const { error } = await supabase.auth.signInWithOtp({
-        email,
+        email
       })
 
       if (error) throw error
@@ -100,7 +100,7 @@ export default function AuthPage() {
       setMessage('Code sent! Check your email.')
     } catch (error: any) {
       console.error('Error sending code:', error)
-      setMessage('Failed to send code. Please try again.')
+      setMessage(error.message || 'Failed to send code.')
     } finally {
       setIsLoading(false)
     }

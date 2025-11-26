@@ -27,13 +27,20 @@ export function GuestForm({ eventId, pricePerAdult, bankDetails }: GuestFormProp
   const supabase = createClient()
 
   const checkExistingGuest = async (guestName: string) => {
+    // Only check if name is at least 2 characters to avoid unnecessary queries
+    if (!guestName || guestName.trim().length < 2) {
+      setExistingGuest(null)
+      setIsCheckingGuest(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('guests')
         .select('*')
         .eq('event_id', eventId)
         .eq('name', guestName.trim())
-        .single()
+        .maybeSingle() // Use maybeSingle instead of single to handle no results gracefully
 
       if (data && !error) {
         setExistingGuest(data)
@@ -43,7 +50,7 @@ export function GuestForm({ eventId, pricePerAdult, bankDetails }: GuestFormProp
         setExistingGuest(null)
       }
     } catch (error) {
-      // No existing guest found
+      // No existing guest found or query error
       setExistingGuest(null)
     } finally {
       setIsCheckingGuest(false)
@@ -66,11 +73,22 @@ export function GuestForm({ eventId, pricePerAdult, bankDetails }: GuestFormProp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Check for existing guest when name changes
+  // Check for existing guest when name changes (with debouncing)
   useEffect(() => {
-    if (name.trim() && mounted && !isCheckingGuest) {
-      checkExistingGuest(name.trim())
+    if (!name.trim() || !mounted || isCheckingGuest) {
+      return
     }
+
+    // Debounce: only check after user stops typing for 500ms
+    const timeoutId = setTimeout(() => {
+      if (name.trim().length >= 2) {
+        checkExistingGuest(name.trim())
+      } else {
+        setExistingGuest(null)
+      }
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, eventId, mounted])
 
@@ -272,9 +290,9 @@ export function GuestForm({ eventId, pricePerAdult, bankDetails }: GuestFormProp
         <Button
           type="submit"
           disabled={isLoading || !consent}
-          className="w-full min-h-[48px] sm:w-auto"
+          className="w-full min-h-[48px] sm:w-auto text-lg font-bold"
         >
-          {isLoading ? 'Submitting...' : 'RSVP'}
+          {isLoading ? 'Saving...' : "I'm In! ✅"}
         </Button>
       </form>
 

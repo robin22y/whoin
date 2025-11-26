@@ -13,13 +13,16 @@ interface ShareCardProps {
   eventTitle: string
   eventDate: string
   eventLocation: string
+  shortCode?: string
 }
 
-export function ShareCard({ eventId, eventTitle, eventDate, eventLocation }: ShareCardProps) {
+export function ShareCard({ eventId, eventTitle, eventDate, eventLocation, shortCode }: ShareCardProps) {
   const [includeCalendar, setIncludeCalendar] = useState(false)
+  // Use shortCode if available, otherwise fall back to eventId
+  const linkId = shortCode || eventId
   const eventLink = typeof window !== 'undefined' 
-    ? `${window.location.origin}/e/${eventId}`
-    : `whoin.uk/e/${eventId}`
+    ? `${window.location.origin}/e/${linkId}`
+    : `whoin.uk/e/${linkId}`
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-GB', {

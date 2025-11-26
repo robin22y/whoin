@@ -27,29 +27,41 @@ export default async function EventPage({
   const { id } = await params
   const supabase = await createClient()
 
-  // Fetch event (exclude management_key from public API)
-  const { data: event, error } = await supabase
+  // Check if id is a UUID or short code
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
+  // Build query based on whether id is UUID or short code
+  let query = supabase
     .from('events')
-    .select('id, title, date, location, bank_details, price_per_adult, user_id, created_at, updated_at')
-    .eq('id', id)
-    .single()
+    .select('id, title, date, location, bank_details, price_per_adult, user_id, created_at, updated_at, short_code')
+
+  if (isUUID) {
+    query = query.eq('id', id)
+  } else {
+    query = query.eq('short_code', id)
+  }
+
+  const { data: event, error } = await query.single()
 
   if (error || !event) {
     notFound()
   }
 
+  // Use the actual event.id (UUID) for subsequent queries
+  const eventId = event.id
+
   // Fetch guests
   const { data: guests } = await supabase
     .from('guests')
     .select('*')
-    .eq('event_id', id)
+    .eq('event_id', eventId)
     .order('created_at', { ascending: true })
 
   // Fetch stats
   const { data: stats } = await supabase
     .from('event_stats')
     .select('*')
-    .eq('event_id', id)
+    .eq('event_id', eventId)
     .single()
 
   // Check if current user is the organizer
@@ -85,23 +97,24 @@ export default async function EventPage({
                   </p>
                 </div>
               </div>
-              {isOrganizer && <ManageButton eventId={id} />}
+              {isOrganizer && <ManageButton eventId={eventId} />}
             </div>
           </div>
 
           {/* Share Card - Only show for organizer */}
           {isOrganizer && (
             <ShareCard
-              eventId={id}
+              eventId={eventId}
               eventTitle={event.title}
               eventDate={event.date}
               eventLocation={event.location}
+              shortCode={event.short_code || undefined}
             />
           )}
 
           {/* Guest Form */}
           <GuestForm
-            eventId={id}
+            eventId={eventId}
             pricePerAdult={event.price_per_adult || 0}
             bankDetails={event.bank_details || ''}
           />
