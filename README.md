@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WhoIn.uk - RSVP Lite
 
-## Getting Started
+Extreme simple RSVP tool for UK Community Events.
 
-First, run the development server:
+## Tech Stack
+
+- **Frontend:** Next.js 16 (App Router), TypeScript, Tailwind CSS, Lucide React icons
+- **UI Library:** shadcn/ui
+- **Backend:** Supabase (Region: eu-west-2 London for GDPR compliance)
+- **Analytics:** PostHog (Privacy Mode - No Cookies)
+
+## Features
+
+1. **Mad Libs Creator:** Organizers type "I am organizing [Event]..." to create events
+2. **Viral Guest Memory:** Guest names are remembered via localStorage for future RSVPs
+3. **Family Math:** Automatic cost calculation (Adults × Price, kids are free)
+4. **No Logins for Guests:** Guests never need to log in. Organizers use magic links
+5. **GDPR Compliant:** Strict privacy controls, UK/EU data storage, consent checkboxes
+
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Up Supabase
+
+1. Create a new Supabase project at [supabase.com](https://supabase.com)
+2. **CRITICAL:** Select **Region: London (eu-west-2)** for GDPR compliance
+3. Go to SQL Editor and run the schema from `supabase/schema.sql`
+4. Copy your project URL and anon key
+
+### 3. Configure Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Optional: PostHog Analytics (Privacy Mode)
+NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
+NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
+```
+
+### 4. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Design Rules
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Mobile First:** All designs are optimized for mobile devices
+- **Buttons:** Minimum height 48px for touch-friendly interaction
+- **Inputs:** Font size 16px to prevent iOS zoom
+- **Aesthetics:** Clean, white, "Notion-like" vibe with Inter font
+- **Mad Libs UI:** Inputs styled as underlined text, not boxes
 
-## Learn More
+## GDPR & Privacy
 
-To learn more about Next.js, take a look at the following resources:
+- **Consent Required:** Guest form includes mandatory consent checkbox
+- **No IP Collection:** IP addresses are not collected
+- **UK/EU Storage:** All data stored in London (eu-west-2) region
+- **Delete My Data:** Footer includes button to delete all user data
+- **Privacy Policy:** Available at `/privacy`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+├── app/
+│   ├── auth/              # Magic link authentication
+│   ├── event/[id]/        # Event pages with RSVP
+│   ├── privacy/           # Privacy policy page
+│   └── layout.tsx         # Root layout with PostHog
+├── components/
+│   ├── ui/                # shadcn/ui components
+│   ├── event-creator.tsx  # Mad Libs event creator
+│   ├── guest-form.tsx     # RSVP form with consent
+│   ├── footer.tsx         # Footer with delete functionality
+│   └── providers/         # PostHog provider
+├── lib/
+│   └── supabase/          # Supabase client utilities
+├── hooks/
+│   └── use-local-storage.ts # localStorage hook with hydration
+└── supabase/
+    └── schema.sql         # Database schema
+```
 
-## Deploy on Vercel
+## Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Create an Event:** Visit the homepage and fill out the Mad Libs-style form
+2. **Authenticate:** Enter your email to receive a magic link (no password needed)
+3. **Share Event:** Share the event URL with guests
+4. **RSVP:** Guests can RSVP without logging in, names are remembered for next time
+5. **View Stats:** Event page shows anonymized statistics
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT
