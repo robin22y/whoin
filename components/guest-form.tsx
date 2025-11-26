@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { Minus, Plus, CreditCard, CheckCircle2 } from 'lucide-react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 
 interface GuestFormProps {
   eventId: string
@@ -17,7 +18,8 @@ interface GuestFormProps {
 }
 
 export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }: GuestFormProps) {
-  const [name, setName] = useState('')
+  const [storedName, setStoredName] = useLocalStorage('user_name', '')
+  const [name, setName] = useState(storedName)
   const [adultCount, setAdultCount] = useState(1)
   const [kidCount, setKidCount] = useState(0)
   const [saveToDevice, setSaveToDevice] = useState(false)
@@ -61,14 +63,11 @@ export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }
 
   useEffect(() => {
     setMounted(true)
-    if (typeof window !== 'undefined') {
-      const storedName = localStorage.getItem('user_name')
-      if (storedName) {
-        setName(storedName)
-        checkExistingGuest(storedName)
-      } else {
-        setIsCheckingGuest(false)
-      }
+    if (storedName) {
+      setName(storedName)
+      checkExistingGuest(storedName)
+    } else {
+      setIsCheckingGuest(false)
     }
   }, [])
 
@@ -116,13 +115,11 @@ export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }
       if (error) throw error
 
       // ONLY save to LocalStorage if they checked the box (PECR Compliance)
-      if (typeof window !== 'undefined') {
-        if (saveToDevice) {
-          localStorage.setItem('user_name', name.trim())
-        } else {
-          // Optional: Clear it if they uncheck it (good privacy practice)
-          localStorage.removeItem('user_name')
-        }
+      if (saveToDevice) {
+        setStoredName(name.trim())
+      } else {
+        // Optional: Clear it if they uncheck it (good privacy practice)
+        setStoredName('')
       }
       setExistingGuest(data)
       alert('Counted! Thanks for signing up.')

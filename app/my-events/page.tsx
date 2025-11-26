@@ -33,15 +33,13 @@ export default function MyEventsPage() {
 
       const localEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
 
-      // Merge: Prefer DB event if ID matches
-      const allEvents = [...dbEvents]
-      localEvents.forEach((localEv: any) => {
-        if (!allEvents.find(dbEv => dbEv.id === localEv.id)) {
-          allEvents.push(localEv)
-        }
-      })
+      // Create a Map where 'ID' is the key (automatically removes duplicates)
+      // We put local first, then overwrite with DB events (so DB is the source of truth)
+      const eventMap = new Map([...localEvents, ...dbEvents].map(e => [e.id, e]))
 
-      allEvents.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      // Convert back to array and sort
+      const allEvents = Array.from(eventMap.values())
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
       setEvents(allEvents)
       setLoading(false)

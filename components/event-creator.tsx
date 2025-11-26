@@ -16,21 +16,24 @@ function generateShortCode() {
 }
 
 export function EventCreator() {
-  const [eventTitle, setEventTitle] = useState('')
-  const [date, setDate] = useState('')
-  const [time, setTime] = useState('')
-  const [location, setLocation] = useState('')
-  const [pricePerAdult, setPricePerAdult] = useState('')
-  const [pricePerChild, setPricePerChild] = useState('')
-  
-  // Flexible Payment Details
-  const [bankDetails, setBankDetails] = useState('')
-
-  const [description, setDescription] = useState('')
-  const [theme, setTheme] = useState('minimal')
+  const [form, setForm] = useState({
+    title: '',
+    date: '',
+    time: '',
+    location: '',
+    priceAdult: '',
+    priceChild: '',
+    bankDetails: '',
+    description: '',
+    theme: 'minimal',
+  })
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  const handleChange = (field: string, value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,16 +41,16 @@ export function EventCreator() {
 
     try {
       // Logic Validation: Check if date/time is in the past
-      if (date) {
+      if (form.date) {
         const now = new Date()
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        const selectedDateOnly = new Date(date)
+        const selectedDateOnly = new Date(form.date)
         selectedDateOnly.setHours(0, 0, 0, 0)
         
         let selectedDateTime: Date
-        if (time) {
-          const [hours, minutes] = time.split(':').map(Number)
-          selectedDateTime = new Date(date)
+        if (form.time) {
+          const [hours, minutes] = form.time.split(':').map(Number)
+          selectedDateTime = new Date(form.date)
           selectedDateTime.setHours(hours, minutes, 0, 0)
         } else {
           selectedDateTime = new Date(selectedDateOnly)
@@ -64,18 +67,18 @@ export function EventCreator() {
 
       const { data: { user } } = await supabase.auth.getUser()
       const shortCode = generateShortCode()
-      const combinedDateTime = date && time ? `${date}T${time}:00` : date || ''
+      const combinedDateTime = form.date && form.time ? `${form.date}T${form.time}:00` : form.date || ''
       
       const eventData = {
-        title: eventTitle,
+        title: form.title,
         date: combinedDateTime,
-        location,
-        price_per_adult: parseFloat(pricePerAdult) || 0,
-        price_per_child: parseFloat(pricePerChild) || 0,
-        bank_details: bankDetails,
-        description: description,
+        location: form.location,
+        price_per_adult: parseFloat(form.priceAdult) || 0,
+        price_per_child: parseFloat(form.priceChild) || 0,
+        bank_details: form.bankDetails,
+        description: form.description,
         short_code: shortCode,
-        theme: theme,
+        theme: form.theme,
       }
 
       if (!user) {
@@ -96,7 +99,7 @@ export function EventCreator() {
         localStorage.setItem(`event_${data.id}_key`, data.management_key)
         const myEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
         if (!myEvents.find((e: any) => e.id === data.id)) {
-          myEvents.push({ id: data.id, title: eventTitle, date: combinedDateTime, location, management_key: data.management_key, created_at: new Date().toISOString() })
+          myEvents.push({ id: data.id, title: form.title, date: combinedDateTime, location: form.location, management_key: data.management_key, created_at: new Date().toISOString() })
           localStorage.setItem('my_events', JSON.stringify(myEvents))
         }
       }
@@ -129,13 +132,13 @@ export function EventCreator() {
             <button
               key={t.id}
               type="button"
-              onClick={() => setTheme(t.id)}
+              onClick={() => handleChange('theme', t.id)}
               className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${t.color} ${
-                theme === t.id ? 'ring-2 ring-offset-2 ring-black scale-110 shadow-md z-10' : 'opacity-60 hover:opacity-100 hover:scale-105'
+                form.theme === t.id ? 'ring-2 ring-offset-2 ring-black scale-110 shadow-md z-10' : 'opacity-60 hover:opacity-100 hover:scale-105'
               }`}
               title={t.label}
             >
-              <t.icon className={`w-4 h-4 ${theme === t.id ? 'text-black' : 'text-slate-600'}`} />
+              <t.icon className={`w-4 h-4 ${form.theme === t.id ? 'text-black' : 'text-slate-600'}`} />
             </button>
           ))}
         </div>
@@ -144,15 +147,15 @@ export function EventCreator() {
       <form onSubmit={handleSubmit} className="transition-[height] duration-500 ease-in-out">
         <div className="text-3xl md:text-4xl leading-[1.8] font-medium text-gray-400 transition-all">
           <span className="text-gray-600">I am organizing </span>
-          <input type="text" placeholder="a birthday party" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required autoFocus className={`${inputClass} w-[300px] sm:w-auto`} />
+          <input type="text" placeholder="a birthday party" value={form.title} onChange={(e) => handleChange('title', e.target.value)} required autoFocus className={`${inputClass} w-[300px] sm:w-auto`} />
 
-          {eventTitle.length > 2 && (
+          {form.title.length > 2 && (
             <span className={revealClass}>
               <span> on </span>
               <input 
                 type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)} 
+                value={form.date} 
+                onChange={(e) => handleChange('date', e.target.value)} 
                 required 
                 min={new Date().toISOString().split('T')[0]}
                 className={`${inputClass} min-w-[160px]`} 
@@ -160,22 +163,22 @@ export function EventCreator() {
             </span>
           )}
           
-          {date && (
+          {form.date && (
             <span className={revealClass}>
               <span> at </span>
-              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className={`${inputClass} min-w-[110px]`} />
+              <input type="time" value={form.time} onChange={(e) => handleChange('time', e.target.value)} required className={`${inputClass} min-w-[110px]`} />
             </span>
           )}
           
-          {time && (
+          {form.time && (
             <span className={revealClass}>
               <span> at </span>
-              <input type="text" placeholder="Location / Address" value={location} onChange={(e) => setLocation(e.target.value)} required className={`${inputClass} w-full sm:w-[350px]`} />
+              <input type="text" placeholder="Location / Address" value={form.location} onChange={(e) => handleChange('location', e.target.value)} required className={`${inputClass} w-full sm:w-[350px]`} />
               <span>.</span>
             </span>
           )}
 
-          {location.length > 3 && (
+          {form.location.length > 3 && (
             <div className={`mt-8 space-y-8 ${revealClass}`}>
                <div className="text-xl md:text-2xl border-l-4 border-slate-200 pl-4 py-2 bg-slate-50/50 rounded-r-xl">
                   <span className="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Personal Note (Optional)</span>
@@ -183,8 +186,8 @@ export function EventCreator() {
                   <input 
                     type="text" 
                     placeholder="Can't wait to celebrate with you all! 🥳"  // <--- FIXED HERE
-                    value={description} 
-                    onChange={(e) => setDescription(e.target.value)} 
+                    value={form.description} 
+                    onChange={(e) => handleChange('description', e.target.value)} 
                     className={`${inputClass} w-full sm:w-[80%] text-left font-normal not-italic`} 
                   />
                   <span className="text-gray-400 font-serif italic">"</span>
@@ -193,14 +196,14 @@ export function EventCreator() {
                <div className="pt-8 border-t border-dashed border-gray-200">
                   <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Ticket Price (Optional)</span>
                   <span>Tickets are £</span>
-                  <input type="number" step="0.01" placeholder="0" value={pricePerAdult} onChange={(e) => setPricePerAdult(e.target.value)} className={`${inputClass} w-24`} />
+                  <input type="number" step="0.01" placeholder="0" value={form.priceAdult} onChange={(e) => handleChange('priceAdult', e.target.value)} className={`${inputClass} w-24`} />
                   <span> for adults.</span>
                   
-                  {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
+                  {form.priceAdult && parseFloat(form.priceAdult) > 0 && (
                       <div className={revealClass}>
                          <span className="inline-block mt-2">
                            & £
-                           <input type="number" step="0.01" placeholder="0" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className={`${inputClass} w-24`} />
+                           <input type="number" step="0.01" placeholder="0" value={form.priceChild} onChange={(e) => handleChange('priceChild', e.target.value)} className={`${inputClass} w-24`} />
                            <span> for kids.</span>
                          </span>
                          
@@ -218,8 +221,8 @@ export function EventCreator() {
                                <textarea 
                                  rows={3}
                                  placeholder={`Examples:\n• Sort: 20-00-00 | Acc: 12345678\n• IBAN: GB33 WEST...\n• UPI: name@okhdfcbank`}
-                                 value={bankDetails}
-                                 onChange={(e) => setBankDetails(e.target.value)}
+                                 value={form.bankDetails}
+                                 onChange={(e) => handleChange('bankDetails', e.target.value)}
                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-base font-medium focus:ring-2 focus:ring-black focus:outline-none transition-all resize-none placeholder:text-slate-400"
                                />
                             </div>
@@ -232,7 +235,7 @@ export function EventCreator() {
           )}
         </div>
 
-        {location.length > 3 && (
+        {form.location.length > 3 && (
           <div className={`mt-12 text-center ${revealClass}`}>
             <Button type="submit" disabled={isLoading} size="lg" className="min-w-[240px] text-xl h-16 rounded-full bg-black text-white shadow-xl hover:scale-105 transition-transform">
               {isLoading ? 'Creating...' : '🚀 Create Event Link'}
