@@ -4,6 +4,20 @@ import { ShareCard } from '@/components/share-card'
 import { ManageButton } from '@/components/manage-button'
 import { Footer } from '@/components/footer'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  return {
+    robots: {
+      index: false,
+      follow: false,
+    },
+  }
+}
 
 export default async function EventPage({
   params,
