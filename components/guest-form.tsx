@@ -260,7 +260,7 @@ export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }
             disabled={isLoading}
             className="w-full h-14 text-lg font-bold rounded-xl bg-black hover:bg-slate-800 text-white shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            {isLoading ? 'Saving...' : "I'm In! ✅"}
+            {isLoading ? 'Saving...' : "Count Me In! 👋"}
           </Button>
         </div>
       </form>

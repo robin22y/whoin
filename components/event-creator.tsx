@@ -37,6 +37,22 @@ export function EventCreator() {
     setIsLoading(true)
 
     try {
+      // Logic Validation: Check if date/time is in the past
+      if (date) {
+        const selectedDate = new Date(date)
+        const selectedDateTime = time 
+          ? new Date(`${date}T${time}:00`)
+          : new Date(date)
+        const now = new Date()
+
+        // If the selected date is in the past, block it
+        if (selectedDateTime < now) {
+          alert('Please pick a future date 📅')
+          setIsLoading(false)
+          return
+        }
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       const shortCode = generateShortCode()
       const combinedDateTime = date && time ? `${date}T${time}:00` : date || ''

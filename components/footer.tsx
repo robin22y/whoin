@@ -24,7 +24,6 @@ export function Footer() {
         return
       }
 
-      // Delete all events (cascades to guests and event_stats)
       const { error } = await supabase
         .from('events')
         .delete()
@@ -33,8 +32,6 @@ export function Footer() {
       if (error) throw error
 
       alert('All your data has been deleted successfully.')
-      
-      // Sign out and redirect to home
       await supabase.auth.signOut()
       window.location.href = '/'
     } catch (error) {
@@ -46,31 +43,33 @@ export function Footer() {
   }
 
   return (
-    <footer className="border-t mt-auto py-8 px-6">
+    <footer className="border-t mt-auto py-8 px-6 bg-white/50 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-2">
-            <Link
-              href="/privacy"
-              className="text-sm text-muted-foreground hover:text-foreground underline"
-            >
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <Link href="/privacy" className="hover:text-foreground underline underline-offset-4">
               Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-foreground underline underline-offset-4">
+              Terms of Service
+            </Link>
+            <Link href="/cookies" className="hover:text-foreground underline underline-offset-4">
+              Cookie Policy
             </Link>
           </div>
           <Button
             variant="ghost"
             onClick={handleDeleteData}
             disabled={isDeleting}
-            className="min-h-[48px] w-full sm:w-auto text-muted-foreground hover:text-destructive"
+            className="min-h-[48px] w-full sm:w-auto text-slate-400 hover:text-red-600 hover:bg-red-50"
           >
             {isDeleting ? 'Deleting...' : 'Delete My Data'}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} WhoIn.uk - RSVP Lite. All data stored in UK/EU.
+        <p className="text-xs text-slate-400 text-center sm:text-left">
+          © {new Date().getFullYear()} WhoIn.uk • Simple Event Sign-up. All data stored in UK/EU.
         </p>
       </div>
     </footer>
   )
 }
-

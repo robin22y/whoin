@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Footer } from '@/components/footer'
+import Link from 'next/link'
 
 export default function AuthPage() {
   const [email, setEmail] = useState('')
@@ -128,8 +129,23 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-1 max-w-md mx-auto px-6 py-12 w-full">
+    <div className="min-h-screen flex flex-col bg-[#F7F6F3] text-slate-900 font-sans">
+      {/* Background Pattern */}
+      <div className="fixed inset-0 h-full w-full pointer-events-none z-0 opacity-[0.4]" 
+           style={{ backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
+      </div>
+
+      {/* HEADER */}
+      <header className="relative z-20 w-full px-6 py-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
+           <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl">
+              W
+            </div>
+            <span className="font-bold text-xl tracking-tight">WhoIn.uk</span>
+        </Link>
+      </header>
+
+      <main className="relative z-10 flex-1 max-w-md mx-auto px-6 py-12 w-full">
         <h1 className="text-3xl font-bold mb-8">Organizer Login</h1>
         
         {!isOtpSent ? (

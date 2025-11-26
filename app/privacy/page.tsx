@@ -10,7 +10,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Data Collection and Usage</h2>
             <p className="text-muted-foreground">
-              WhoIn.uk (RSVP Lite) collects minimal data necessary to facilitate event RSVPs:
+              WhoIn.uk (Simple Sign-up Tool) collects minimal data necessary to facilitate event RSVPs:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
               <li>Event information (title, date, location) provided by organizers</li>

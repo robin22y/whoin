@@ -42,7 +42,7 @@ export function ShareCard({ eventId, shortCode, eventTitle, eventDate, eventLoca
 
   const shareOnWhatsApp = () => {
     const formattedDate = formatDate(eventDate)
-    let message = `You're invited to ${eventTitle}! 📅 ${formattedDate} 📍 ${eventLocation}. RSVP here: ${eventLink}. (Made with WhoIn.uk)`
+    let message = `You're invited to ${eventTitle}! 📅 ${formattedDate} 📍 ${eventLocation}. Sign up here: ${eventLink} (Made with WhoIn.uk)`
     
     if (includeCalendar) {
       message += '\n\nP.S. Save this to your calendar'
