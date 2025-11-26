@@ -142,45 +142,39 @@ export default async function EventPage({
 
         <div className="p-6 sm:p-8 space-y-8">
           
-          {/* CUSTOM NOTE (WORD ART STYLE) */}
+          {/* WORD ART NOTE */}
           {event.description && (
             <div className="relative py-6 px-4 text-center group perspective-1000">
-               
-               {/* 1. The Rotate/Hover Effect Container */}
                <div className="relative inline-block transform transition-transform duration-500 hover:scale-105 hover:rotate-2 cursor-default">
-                  
-                  {/* 2. Background 'Highlighter' Brush Stroke */}
-                  <div className={`absolute -inset-2 opacity-20 blur-lg rounded-[50%] ${
+                  {/* Glow Background */}
+                  <div className={`absolute -inset-4 opacity-20 blur-xl rounded-[50%] ${
+                      // @ts-ignore
                       event.theme === 'christmas' ? 'bg-red-500' :
+                      // @ts-ignore
                       event.theme === 'diwali' ? 'bg-amber-400' :
+                      // @ts-ignore
                       event.theme === 'birthday' ? 'bg-blue-400' :
                       'bg-pink-400'
                   }`}></div>
 
-                  {/* 3. The Text (Gradient + 3D Shadow) */}
-                  <p className="relative text-2xl sm:text-3xl font-black leading-tight tracking-tight drop-shadow-sm font-[family-name:var(--font-calistoga)]"
+                  {/* Text with Gradient */}
+                  <p className="relative text-2xl sm:text-3xl font-black leading-tight tracking-tight font-[family-name:var(--font-calistoga)]"
                      style={{
-                       background: event.theme === 'christmas' 
-                         ? 'linear-gradient(to bottom right, #ef4444, #b91c1c)' // Red Gradient
-                         : event.theme === 'diwali'
-                         ? 'linear-gradient(to bottom right, #d97706, #b45309)' // Gold Gradient
-                         : event.theme === 'birthday'
-                         ? 'linear-gradient(to bottom right, #2563eb, #1e40af)' // Blue Gradient
-                         : 'linear-gradient(to bottom right, #1f2937, #000000)', // Black Gradient
+                       background: 
+                         // @ts-ignore
+                         event.theme === 'christmas' ? 'linear-gradient(to bottom right, #ef4444, #b91c1c)' :
+                         // @ts-ignore
+                         event.theme === 'diwali' ? 'linear-gradient(to bottom right, #d97706, #b45309)' :
+                         // @ts-ignore
+                         event.theme === 'birthday' ? 'linear-gradient(to bottom right, #2563eb, #1e40af)' :
+                         'linear-gradient(to bottom right, #1f2937, #000000)',
                        WebkitBackgroundClip: 'text',
                        WebkitTextFillColor: 'transparent',
-                       filter: 'drop-shadow(2px 4px 0px rgba(0,0,0,0.05))' // The "Sticker" Shadow
+                       filter: 'drop-shadow(2px 4px 0px rgba(0,0,0,0.05))'
                      }}
                   >
                     " {event.description} "
                   </p>
-                  
-                  {/* 4. Little Decoration Emoji (Based on theme) */}
-                  <div className="absolute -right-6 -top-6 text-4xl animate-bounce duration-[2000ms]">
-                    {event.theme === 'christmas' ? '🎅' : 
-                     event.theme === 'diwali' ? '🪔' : 
-                     event.theme === 'birthday' ? '🎈' : '📣'}
-                  </div>
                </div>
             </div>
           )}

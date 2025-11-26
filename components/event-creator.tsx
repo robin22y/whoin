@@ -124,7 +124,7 @@ export function EventCreator() {
         <div className="text-3xl md:text-4xl leading-[1.8] font-medium text-gray-400 transition-all">
           
           <span className="text-gray-600">I am organizing </span>
-          <input type="text" placeholder="a birthday party" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required autoFocus className={`${inputClass} w-[300px] sm:w-auto`} />
+          <input type="text" placeholder="Onam Celebration" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required autoFocus className={`${inputClass} w-[300px] sm:w-auto`} />
 
           {eventTitle.length > 2 && (
             <span className={revealClass}>
@@ -150,26 +150,31 @@ export function EventCreator() {
 
           {location.length > 3 && (
             <div className={`mt-8 space-y-8 ${revealClass}`}>
-               <div className="text-xl md:text-2xl border-l-4 border-slate-200 pl-4 py-2">
-                  <span className="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Add a personal note (Optional)</span>
-                  <span className="text-gray-500">"</span>
-                  <input type="text" placeholder="Can't wait to see you all! 🎉" value={description} onChange={(e) => setDescription(e.target.value)} className={`${inputClass} w-full sm:w-[80%] text-left`} />
-                  <span className="text-gray-500">"</span>
+               {/* CUSTOM NOTE SECTION */}
+               <div className="text-xl md:text-2xl border-l-4 border-slate-200 pl-4 py-2 bg-slate-50/50 rounded-r-xl">
+                  <span className="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Personal Note (Optional)</span>
+                  <span className="text-gray-400 font-serif italic">"</span>
+                  <input 
+                    type="text" 
+                    placeholder="Adichu polikkam makkale! 🎉" 
+                    value={description} 
+                    onChange={(e) => setDescription(e.target.value)} 
+                    className={`${inputClass} w-full sm:w-[80%] text-left font-normal not-italic`} 
+                  />
+                  <span className="text-gray-400 font-serif italic">"</span>
                </div>
 
                <div className="pt-4 border-t border-dashed border-gray-200">
-                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Ticket Price (Optional)</span>
-                  <span>Tickets are £</span>
+                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-2">Tickets (Optional)</span>
+                  <span>Adults: £</span>
                   <input type="number" step="0.01" placeholder="0" value={pricePerAdult} onChange={(e) => setPricePerAdult(e.target.value)} className={`${inputClass} w-24`} />
-                  <span> for adults.</span>
                   
                   {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
                       <span className={revealClass}>
-                         <br/>And £
+                         <br/>Kids: £
                          <input type="number" step="0.01" placeholder="0" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className={`${inputClass} w-24`} />
-                         <span> for kids.</span>
                          <div className="h-4"></div>
-                         <span>Send money to: </span>
+                         <span>Pay to: </span>
                          <input type="text" placeholder="Sort Code & Account" value={bankDetails} onChange={(e) => setBankDetails(e.target.value)} className={`${inputClass} w-full sm:w-[400px]`} />
                       </span>
                   )}
