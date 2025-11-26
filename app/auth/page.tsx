@@ -9,6 +9,8 @@ import { Footer } from '@/components/footer'
 
 export default function AuthPage() {
   const [email, setEmail] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [codeSent, setCodeSent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const router = useRouter()
@@ -23,19 +25,19 @@ export default function AuthPage() {
         if (pendingEvent) {
           createPendingEvent(user.id, JSON.parse(pendingEvent))
         } else {
-          router.push('/')
+          router.push('/my-events')
         }
       }
     })
 
-    // Handle magic link callback
+    // Handle authentication state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         const pendingEvent = localStorage.getItem('pending_event')
         if (pendingEvent) {
           createPendingEvent(session.user.id, JSON.parse(pendingEvent))
         } else {
-          router.push('/')
+          router.push('/my-events')
         }
       }
     })
@@ -92,7 +94,7 @@ export default function AuthPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setMessage('')
@@ -101,46 +103,132 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          shouldCreateUser: true,
         },
       })
 
       if (error) throw error
 
-      setMessage('Check your email for the magic link!')
+      setCodeSent(true)
+      setMessage('Check your email for the 6-digit code!')
     } catch (error: any) {
-      console.error('Error sending magic link:', error)
-      setMessage('Failed to send magic link. Please try again.')
+      console.error('Error sending OTP code:', error)
+      setMessage('Failed to send code. Please try again.')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setMessage('')
+
+    if (otpCode.length !== 6) {
+      setMessage('Please enter a valid 6-digit code.')
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email',
+      })
+
+      if (error) throw error
+
+      // Success - redirect immediately to my-events
+      router.push('/my-events')
+    } catch (error: any) {
+      console.error('Error verifying OTP code:', error)
+      setMessage('Invalid code. Please try again.')
+      setOtpCode('')
+      setIsLoading(false)
+    }
+  }
+
+  const handleBack = () => {
+    setCodeSent(false)
+    setOtpCode('')
+    setMessage('')
   }
 
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 max-w-md mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold mb-8">Organizer Login</h1>
-        <p className="text-muted-foreground mb-6">
-          Enter your email to receive a magic link. No password needed!
-        </p>
+        
+        {!codeSent ? (
+          <>
+            <p className="text-muted-foreground mb-6">
+              Enter your email to receive a 6-digit code. No password needed!
+            </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full"
-          />
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full min-h-[48px]"
-          >
-            {isLoading ? 'Sending...' : 'Send Magic Link'}
-          </Button>
-        </form>
+            <form onSubmit={handleSendCode} className="space-y-4">
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+                className="w-full"
+              />
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full min-h-[48px]"
+              >
+                {isLoading ? 'Sending...' : 'Send Code'}
+              </Button>
+            </form>
+          </>
+        ) : (
+          <>
+            <p className="text-muted-foreground mb-6">
+              We sent a 6-digit code to <strong>{email}</strong>
+            </p>
+
+            <form onSubmit={handleVerifyCode} className="space-y-4">
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="123456"
+                value={otpCode}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                  setOtpCode(value)
+                }}
+                required
+                disabled={isLoading}
+                className="w-full text-center text-2xl tracking-widest font-mono"
+                maxLength={6}
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={isLoading}
+                  className="flex-1 min-h-[48px]"
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading || otpCode.length !== 6}
+                  className="flex-1 min-h-[48px]"
+                >
+                  {isLoading ? 'Verifying...' : 'Verify Code'}
+                </Button>
+              </div>
+            </form>
+          </>
+        )}
 
         {message && (
           <p className={`mt-4 text-sm ${message.includes('Check') ? 'text-green-600' : 'text-red-600'}`}>
