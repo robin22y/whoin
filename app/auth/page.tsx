@@ -26,13 +26,10 @@ export default function AuthPage() {
   }, [supabase])
 
   const handlePostLogin = async (userId: string) => {
-    // 1. Check for pending event creation (from Mad Libs)
     const pendingEvent = localStorage.getItem('pending_event')
-    
     if (pendingEvent) {
       await createPendingEvent(userId, JSON.parse(pendingEvent))
     } else {
-      // 2. Otherwise, go to My Events dashboard
       router.push('/my-events')
     }
   }
@@ -40,7 +37,6 @@ export default function AuthPage() {
   const createPendingEvent = async (userId: string, eventData: any) => {
     try {
       setIsLoading(true)
-
       const { data, error } = await supabase
         .from('events')
         .insert({
@@ -59,7 +55,6 @@ export default function AuthPage() {
       if (data.management_key) {
         localStorage.setItem(`event_${data.id}_key`, data.management_key)
         
-        // Add to My Events list in localStorage
         const myEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
         if (!myEvents.find((e: any) => e.id === data.id)) {
           myEvents.push({
@@ -75,7 +70,8 @@ export default function AuthPage() {
       }
 
       localStorage.removeItem('pending_event')
-      router.push(`/e/${data.id}`)
+      // Redirect to Dashboard, NOT guest page
+      router.push(`/manage/${data.id}?key=${data.management_key}`)
     } catch (error) {
       console.error('Error creating event:', error)
       alert('Failed to create event. Please try again.')
@@ -89,7 +85,7 @@ export default function AuthPage() {
     setMessage('')
 
     try {
-      // Removing 'options' tells Supabase to send a CODE, not a LINK.
+      // NEW: No options object = Send Code
       const { error } = await supabase.auth.signInWithOtp({
         email
       })
@@ -100,7 +96,7 @@ export default function AuthPage() {
       setMessage('Code sent! Check your email.')
     } catch (error: any) {
       console.error('Error sending code:', error)
-      setMessage(error.message || 'Failed to send code.')
+      setMessage('Failed to send code. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -137,7 +133,6 @@ export default function AuthPage() {
         <h1 className="text-3xl font-bold mb-8">Organizer Login</h1>
         
         {!isOtpSent ? (
-          // STEP 1: Send Code
           <>
             <p className="text-muted-foreground mb-6">
               Enter your email to receive a 6-digit login code.
@@ -161,7 +156,6 @@ export default function AuthPage() {
             </form>
           </>
         ) : (
-          // STEP 2: Enter Code
           <>
             <p className="text-muted-foreground mb-6">
               Enter the code sent to <strong>{email}</strong>
