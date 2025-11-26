@@ -1,22 +1,16 @@
 {
   "name": "WhoIn.uk",
   "short_name": "WhoIn",
-  "description": "The simplest event sign-up tool for communities.",
+  "description": "Simple event sign-up tool",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F6F3",
   "theme_color": "#000000",
-  "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
     }
   ]
 }
