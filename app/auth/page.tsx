@@ -41,7 +41,6 @@ export default function AuthPage() {
     try {
       setIsLoading(true)
 
-      // eventData.date is already combined from EventCreator
       const { data, error } = await supabase
         .from('events')
         .insert({
@@ -90,9 +89,9 @@ export default function AuthPage() {
     setMessage('')
 
     try {
+      // IMPORTANT: No emailRedirectTo options here. This forces Code mode.
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        // No emailRedirectTo options needed for Token mode
       })
 
       if (error) throw error
