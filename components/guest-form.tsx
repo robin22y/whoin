@@ -12,10 +12,11 @@ import { Minus, Plus } from 'lucide-react'
 interface GuestFormProps {
   eventId: string
   pricePerAdult: number
+  pricePerChild: number // <--- NEW PROP
   bankDetails: string
 }
 
-export function GuestForm({ eventId, pricePerAdult, bankDetails }: GuestFormProps) {
+export function GuestForm({ eventId, pricePerAdult, pricePerChild, bankDetails }: GuestFormProps) {
   const [name, setName] = useState('')
   const [adultCount, setAdultCount] = useState(1)
   const [kidCount, setKidCount] = useState(0)
@@ -93,7 +94,7 @@ export function GuestForm({ eventId, pricePerAdult, bankDetails }: GuestFormProp
   }, [name, eventId, mounted])
 
   const calculateTotal = () => {
-    return adultCount * pricePerAdult
+    return (adultCount * pricePerAdult) + (kidCount * pricePerChild) // <--- NEW MATH
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

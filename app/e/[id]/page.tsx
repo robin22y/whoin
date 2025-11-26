@@ -33,7 +33,7 @@ export default async function EventPage({
   // Build query based on whether id is UUID or short code
   let query = supabase
     .from('events')
-    .select('id, title, date, location, bank_details, price_per_adult, user_id, created_at, updated_at, short_code')
+    .select('id, title, date, location, bank_details, price_per_adult, price_per_child, user_id, created_at, updated_at, short_code')
 
   if (isUUID) {
     query = query.eq('id', id)
@@ -116,6 +116,7 @@ export default async function EventPage({
           <GuestForm
             eventId={eventId}
             pricePerAdult={event.price_per_adult || 0}
+            pricePerChild={event.price_per_child || 0} // <--- PASS IT HERE
             bankDetails={event.bank_details || ''}
           />
 

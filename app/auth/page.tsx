@@ -167,7 +167,7 @@ export default function AuthPage() {
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 required
-                maxLength={6}
+                maxLength={8}  // <--- CHANGE THIS FROM 6 TO 8
                 className="w-full text-center text-2xl tracking-widest h-14"
               />
               <Button

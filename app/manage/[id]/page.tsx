@@ -10,7 +10,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ExportButton } from '@/components/export-button'
-import { ShareCard } from '@/components/share-card' // <--- 1. IMPORT THIS
+import { ShareCard } from '@/components/share-card'
+import { LogoutButton } from '@/components/logout-button' // <--- 1. IMPORT THIS
 import { notFound, redirect } from 'next/navigation'
 
 export default async function ManageEventPage({
@@ -45,7 +46,7 @@ export default async function ManageEventPage({
   // Calculations...
   const totalHeadcount = guests?.reduce((sum, guest) => sum + guest.adult_count + guest.kid_count, 0) || 0
   const totalAdults = guests?.reduce((sum, guest) => sum + guest.adult_count, 0) || 0
-  const totalExpectedRevenue = totalAdults * (event.price_per_adult || 0)
+  const totalExpectedRevenue = totalAdults * (event.price_per_adult || 0) + (guests?.reduce((sum, guest) => sum + guest.kid_count, 0) || 0) * (event.price_per_child || 0)
   
   const eventDate = new Date(event.date)
   const deletionDate = new Date(eventDate)
@@ -61,15 +62,19 @@ export default async function ManageEventPage({
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 max-w-6xl mx-auto px-6 py-12">
         <div className="space-y-8">
-          {/* Event Header */}
-          <div>
-            <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
-            <p className="text-muted-foreground">
-              {formatDate(event.date)} • {event.location}
-            </p>
+          {/* Event Header with Logout Button */}
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
+              <p className="text-muted-foreground">
+                {formatDate(event.date)} • {event.location}
+              </p>
+            </div>
+            {/* 2. ADD LOGOUT BUTTON HERE */}
+            <LogoutButton />
           </div>
 
-          {/* 2. ADD SHARE CARD HERE */}
+          {/* Share Card */}
           <ShareCard 
             eventId={event.id}
             eventTitle={event.title}
@@ -96,18 +101,19 @@ export default async function ManageEventPage({
             <Card>
               <CardHeader>
                 <CardTitle>Total Expected Revenue</CardTitle>
-                <CardDescription>Based on adult ticket price</CardDescription>
+                <CardDescription>Based on ticket prices</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-4xl font-bold">£{totalExpectedRevenue.toFixed(2)}</p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  {totalAdults} adult(s) × £{(event.price_per_adult || 0).toFixed(2)}
+                  {/* Simplified breakdown display */}
+                  Adults: £{event.price_per_adult} • Kids: £{event.price_per_child}
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Guests Table & Export... (Keep the rest the same) */}
+          {/* Guests Table */}
           <Card>
             <CardHeader>
               <CardTitle>Guest List</CardTitle>
@@ -167,7 +173,7 @@ export default async function ManageEventPage({
             </Card>
           )}
 
-          {/* Data Retention Warning... (Keep the same) */}
+          {/* Data Retention Warning */}
           <Card className="bg-amber-50 border-amber-200">
             <CardContent className="pt-6">
               <div className="space-y-2">

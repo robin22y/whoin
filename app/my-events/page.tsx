@@ -37,6 +37,7 @@ export default function MyEventsPage() {
       const localEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
 
       // 4. Merge them (avoid duplicates)
+      // We prefer the DB version if it exists
       const allEvents = [...dbEvents]
       localEvents.forEach((localEv: any) => {
         if (!allEvents.find(dbEv => dbEv.id === localEv.id)) {
@@ -71,36 +72,42 @@ export default function MyEventsPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <h1 className="text-4xl font-bold">My Events</h1>
             
-            {/* Show Login Button if not logged in */}
-            {!user && !loading && (
-              <Link href="/auth">
-                <Button variant="secondary">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Organizer Login
-                </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              {/* LOGIN BUTTON - Only shows if NOT logged in */}
+              {!user && !loading && (
+                <Link href="/auth" className="flex-1 sm:flex-none">
+                  <Button variant="secondary" className="w-full">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Organizer Login
+                  </Button>
+                </Link>
+              )}
+              
+              <Link href="/" className="flex-1 sm:flex-none">
+                <Button variant="outline" className="w-full">Create New</Button>
               </Link>
-            )}
-            
-            {user && (
-               <Link href="/">
-                 <Button variant="outline">Create New Event</Button>
-               </Link>
-            )}
+            </div>
           </div>
 
           {loading ? (
-            <p>Loading your events...</p>
+            <div className="py-12 text-center text-muted-foreground">Loading your events...</div>
           ) : events.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground mb-4">
+                <p className="text-muted-foreground mb-6">
                   No events found on this device.
                 </p>
                 {!user ? (
-                  <div className="space-y-2">
-                    <p>Did you create them on another device?</p>
+                  <div className="space-y-4">
+                    <p className="text-sm">
+                      Did you create events on another device? 
+                      <br/>Log in to sync them.
+                    </p>
                     <Link href="/auth">
-                      <Button>Log In to Sync</Button>
+                      <Button>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Log In to Account
+                      </Button>
                     </Link>
                   </div>
                 ) : (
@@ -115,23 +122,26 @@ export default function MyEventsPage() {
               {events.map((event) => (
                 <Card key={event.id}>
                   <CardHeader className="pb-2">
-                    <div className="flex justify-between">
-                      <CardTitle className="text-xl">{event.title}</CardTitle>
-                      {/* Status Badge */}
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                        Active
-                      </span>
-                    </div>
-                    <CardDescription>
-                      <div className="flex flex-col gap-1 mt-1">
-                        <span className="flex items-center gap-2">
-                          <Calendar className="h-3 w-3" /> {formatDate(event.date)}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <MapPin className="h-3 w-3" /> {event.location}
-                        </span>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-xl">{event.title}</CardTitle>
+                        <CardDescription className="mt-1">
+                          <div className="flex flex-col gap-1">
+                            <span className="flex items-center gap-2">
+                              <Calendar className="h-3 w-3" /> {formatDate(event.date)}
+                            </span>
+                            <span className="flex items-center gap-2">
+                              <MapPin className="h-3 w-3" /> {event.location}
+                            </span>
+                          </div>
+                        </CardDescription>
                       </div>
-                    </CardDescription>
+                      {user && (
+                        <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-full border border-blue-100">
+                          Synced
+                        </span>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="flex gap-3 mt-2">
@@ -140,14 +150,13 @@ export default function MyEventsPage() {
                           View Page
                         </Button>
                       </Link>
-                      {/* Pass the Key if we have it, otherwise page might handle it via auth */}
                       <Link 
                         href={`/manage/${event.id}?key=${event.management_key || ''}`} 
                         className="flex-1"
                       >
                         <Button className="w-full">
                           <Settings className="mr-2 h-4 w-4" />
-                          Stats & Edit
+                          Manage
                         </Button>
                       </Link>
                     </div>

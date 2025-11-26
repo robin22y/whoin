@@ -22,6 +22,7 @@ export function EventCreator() {
   const [time, setTime] = useState('')
   const [location, setLocation] = useState('')
   const [pricePerAdult, setPricePerAdult] = useState('')
+  const [pricePerChild, setPricePerChild] = useState('') // <--- NEW
   const [bankDetails, setBankDetails] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -32,77 +33,66 @@ export function EventCreator() {
     setIsLoading(true)
 
     try {
-      // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser()
       
+      // Combine date/time
+      const combinedDateTime = date && time ? `${date}T${time}:00` : date || ''
+      const eventData = {
+        title: eventTitle,
+        date: combinedDateTime,
+        location,
+        price_per_adult: parseFloat(pricePerAdult) || 0,
+        price_per_child: parseFloat(pricePerChild) || 0, // <--- NEW
+        bank_details: bankDetails,
+      }
+
       if (!user) {
-        // Combine date and time into ISO timestamp
-        const combinedDateTime = date && time ? `${date}T${time}:00` : date || ''
-        
-        // Store event data in localStorage for magic link flow
-        const eventData = {
-          title: eventTitle,
-          date: combinedDateTime,
-          location,
-          pricePerAdult: parseFloat(pricePerAdult) || 0,
-          bankDetails,
-        }
-        localStorage.setItem('pending_event', JSON.stringify(eventData))
-        // Redirect to auth
+        localStorage.setItem('pending_event', JSON.stringify({
+            ...eventData, 
+            pricePerAdult: eventData.price_per_adult, 
+            pricePerChild: eventData.price_per_child
+        }))
         router.push('/auth')
         return
       }
 
-      // Combine date and time into ISO timestamp
-      const combinedDateTime = date && time ? `${date}T${time}:00` : date || ''
-
       // Generate short code for the event
       const shortCode = generateShortCode()
 
-      // Create event (select management_key and short_code for creator)
       const { data, error } = await supabase
         .from('events')
         .insert({
-          title: eventTitle,
-          date: combinedDateTime,
-          location,
-          price_per_adult: parseFloat(pricePerAdult) || 0,
-          bank_details: bankDetails,
+          ...eventData,
           user_id: user.id,
           short_code: shortCode,
         })
-        .select('id, management_key, short_code, title, date, location')
+        .select('id, management_key, short_code')
         .single()
 
       if (error) throw error
 
-      // Store management_key and event info in localStorage
       if (data.management_key) {
-        // Store individual key
         localStorage.setItem(`event_${data.id}_key`, data.management_key)
         
-        // Store event in "My Events" list
+        // Add to My Events list in localStorage
         const myEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
-        const eventEntry = {
-          id: data.id,
-          title: data.title,
-          date: data.date,
-          location: data.location,
-          management_key: data.management_key,
-          created_at: new Date().toISOString(),
-        }
-        
-        // Add to list if not already present
         if (!myEvents.find((e: any) => e.id === data.id)) {
-          myEvents.push(eventEntry)
+          myEvents.push({
+            id: data.id,
+            title: eventData.title,
+            date: eventData.date,
+            location: eventData.location,
+            management_key: data.management_key,
+            created_at: new Date().toISOString(),
+          })
           localStorage.setItem('my_events', JSON.stringify(myEvents))
         }
       }
 
-      router.push(`/e/${data.id}`)
+      router.push(`/manage/${data.id}?key=${data.management_key}`)
     } catch (error) {
       console.error('Error creating event:', error)
-      alert('Failed to create event. Please try again.')
+      alert('Failed to create event.')
     } finally {
       setIsLoading(false)
     }
@@ -112,75 +102,42 @@ export function EventCreator() {
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto p-6">
       <div className="text-3xl leading-relaxed mb-8 flex flex-wrap items-baseline gap-x-2 gap-y-4">
         <span>I am organizing</span>
-        <Input
-          type="text"
-          placeholder="a birthday party"
-          value={eventTitle}
-          onChange={(e) => setEventTitle(e.target.value)}
-          required
-          className="mad-libs-input inline-block w-auto min-w-[200px]"
-          style={{ fontSize: 'inherit' }}
+        <Input 
+          placeholder="a birthday party" 
+          value={eventTitle} 
+          onChange={(e) => setEventTitle(e.target.value)} 
+          required 
+          className="mad-libs-input min-w-[200px]" 
         />
         <span>on</span>
-        <Input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-          className="mad-libs-input inline-block w-auto min-w-[150px]"
-          style={{ fontSize: 'inherit' }}
-        />
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="mad-libs-input min-w-[150px]" />
         <span>at</span>
-        <Input
-          type="time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          required
-          className="mad-libs-input inline-block w-auto min-w-[100px]"
-          style={{ fontSize: 'inherit' }}
-        />
+        <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className="mad-libs-input min-w-[100px]" />
         <span>at</span>
-        <Input
-          type="text"
-          placeholder="123 Main St, London"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          required
-          className="mad-libs-input inline-block w-auto min-w-[300px]"
-          style={{ fontSize: 'inherit' }}
-        />
+        <Input placeholder="123 Main St" value={location} onChange={(e) => setLocation(e.target.value)} required className="mad-libs-input min-w-[300px]" />
         <span>.</span>
-        <span>Ticket price is</span>
+        
+        {/* PRICE SECTION */}
+        <div className="w-full"></div> {/* Line break */}
+        <span>Tickets are</span>
         <span className="inline-flex items-baseline">
           <span className="mr-1">£</span>
-          <Input
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            value={pricePerAdult}
-            onChange={(e) => setPricePerAdult(e.target.value)}
-            className="mad-libs-input inline-block w-auto min-w-[80px]"
-            style={{ fontSize: 'inherit' }}
-          />
+          <Input type="number" step="0.01" placeholder="0.00" value={pricePerAdult} onChange={(e) => setPricePerAdult(e.target.value)} className="mad-libs-input min-w-[80px]" />
         </span>
-        <span>per adult.</span>
+        <span>for adults, and</span>
+        <span className="inline-flex items-baseline">
+          <span className="mr-1">£</span>
+          <Input type="number" step="0.01" placeholder="0.00" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className="mad-libs-input min-w-[80px]" />
+        </span>
+        <span>for kids.</span>
+        
+        <div className="w-full"></div> {/* Line break */}
         <span>Send money to:</span>
-        <Input
-          type="text"
-          placeholder="Sort code: 12-34-56, Account: 12345678"
-          value={bankDetails}
-          onChange={(e) => setBankDetails(e.target.value)}
-          className="mad-libs-input inline-block w-auto min-w-[300px]"
-          style={{ fontSize: 'inherit' }}
-        />
+        <Input placeholder="Sort code & Account" value={bankDetails} onChange={(e) => setBankDetails(e.target.value)} className="mad-libs-input min-w-[300px]" />
         <span>.</span>
       </div>
 
-      <Button
-        type="submit"
-        disabled={isLoading}
-        className="min-h-[48px] mt-6"
-      >
+      <Button type="submit" disabled={isLoading} className="min-h-[48px] mt-6 text-lg font-bold">
         {isLoading ? 'Creating...' : 'Create Event'}
       </Button>
     </form>

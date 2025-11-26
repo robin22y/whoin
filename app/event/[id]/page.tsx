@@ -102,6 +102,7 @@ export default async function EventPage({
             <GuestForm
               eventId={id}
               pricePerAdult={event.price_per_adult || 0}
+              pricePerChild={event.price_per_child || 0}
               bankDetails={event.bank_details || ''}
             />
           </div>
