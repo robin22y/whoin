@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
@@ -14,16 +14,25 @@ export default function AuthPage() {
   const [isOtpSent, setIsOtpSent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  
+  // Only create Supabase client after component mounts (client-side only)
+  const supabase = useMemo(() => {
+    if (typeof window === 'undefined') return null
+    return createClient()
+  }, [])
 
   // Check if already logged in
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        handlePostLogin(user.id)
-      }
-    })
+    setMounted(true)
+    if (supabase) {
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          handlePostLogin(user.id)
+        }
+      })
+    }
   }, [supabase])
 
   const handlePostLogin = async (userId: string) => {
@@ -36,6 +45,7 @@ export default function AuthPage() {
   }
 
   const createPendingEvent = async (userId: string, eventData: any) => {
+    if (!supabase) return
     try {
       setIsLoading(true)
       const { data, error } = await supabase
@@ -82,6 +92,7 @@ export default function AuthPage() {
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!supabase) return
     setIsLoading(true)
     setMessage('')
 
@@ -105,6 +116,7 @@ export default function AuthPage() {
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!supabase) return
     setIsLoading(true)
     setMessage('')
 
@@ -148,7 +160,9 @@ export default function AuthPage() {
       <main className="relative z-10 flex-1 max-w-md mx-auto px-6 py-12 w-full">
         <h1 className="text-3xl font-bold mb-8">Organizer Login</h1>
         
-        {!isOtpSent ? (
+        {!mounted ? (
+          <div className="text-center py-8">Loading...</div>
+        ) : !isOtpSent ? (
           <>
             <p className="text-muted-foreground mb-6">
               Enter your email to receive a 6-digit login code.
