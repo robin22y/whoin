@@ -1,6 +1,6 @@
-# WhoIn.uk - RSVP Lite
+# WhoIn.uk - Event Sign-up
 
-Extreme simple RSVP tool for UK Community Events.
+Extreme simple sign-up tool for Community Events.
 
 ## Tech Stack
 

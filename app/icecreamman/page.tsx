@@ -9,7 +9,7 @@ export default async function IceCreamManPage({
   const params = await searchParams
 
   // Security: Hardcoded password check
-  if (params.key !== 'my-secret-password-123') {
+  if (params.key !== 'Rncdm 2025') {
     return notFound()
   }
 

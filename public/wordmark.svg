@@ -1,0 +1,5 @@
+<svg width="200" height="50" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="40" height="40" rx="8" fill="black"/>
+  <path d="M10 12L15 28L20 15L25 28L30 12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="50" y="28" font-family="sans-serif" font-size="24" font-weight="bold" fill="black">WhoIn<tspan fill="#64748B">.uk</tspan></text>
+</svg>

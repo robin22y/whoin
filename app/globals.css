@@ -138,6 +138,7 @@
     box-shadow: none;
     outline: none;
     vertical-align: baseline;
+    caret-color: #3b82f6; /* Blue-500 - pulsing caret for high-end feel */
   }
   
   .mad-libs-input:focus {

@@ -2,12 +2,11 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-// Helper function to generate a random 6-character alphanumeric string (lowercase)
-function generateShortCode(): string {
+// Helper to generate short code
+function generateShortCode() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   let result = ''
   for (let i = 0; i < 6; i++) {
@@ -22,9 +21,10 @@ export function EventCreator() {
   const [time, setTime] = useState('')
   const [location, setLocation] = useState('')
   const [pricePerAdult, setPricePerAdult] = useState('')
-  const [pricePerChild, setPricePerChild] = useState('') // <--- NEW
+  const [pricePerChild, setPricePerChild] = useState('')
   const [bankDetails, setBankDetails] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [theme, setTheme] = useState('minimal')
   const router = useRouter()
   const supabase = createClient()
 
@@ -34,11 +34,9 @@ export function EventCreator() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      
-      // Generate the short code
-      const shortCode = generateShortCode() // <--- NEW
-
+      const shortCode = generateShortCode()
       const combinedDateTime = date && time ? `${date}T${time}:00` : date || ''
+      
       const eventData = {
         title: eventTitle,
         date: combinedDateTime,
@@ -46,7 +44,8 @@ export function EventCreator() {
         price_per_adult: parseFloat(pricePerAdult) || 0,
         price_per_child: parseFloat(pricePerChild) || 0,
         bank_details: bankDetails,
-        short_code: shortCode, // <--- SAVE IT
+        short_code: shortCode,
+        theme: theme,
       }
 
       if (!user) {
@@ -68,7 +67,18 @@ export function EventCreator() {
 
       if (data.management_key) {
         localStorage.setItem(`event_${data.id}_key`, data.management_key)
-        // Add to local list logic...
+        const myEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
+        if (!myEvents.find((e: any) => e.id === data.id)) {
+          myEvents.push({
+            id: data.id,
+            title: eventData.title,
+            date: combinedDateTime,
+            location: eventData.location,
+            management_key: data.management_key,
+            created_at: new Date().toISOString(),
+          })
+          localStorage.setItem('my_events', JSON.stringify(myEvents))
+        }
       }
 
       router.push(`/manage/${data.id}?key=${data.management_key}`)
@@ -80,48 +90,174 @@ export function EventCreator() {
     }
   }
 
+  const inputClass = "inline-block bg-transparent border-b-2 border-gray-300 focus:border-black outline-none px-1 py-0 placeholder:text-gray-300 text-center mx-1 font-bold text-gray-900 transition-all duration-300"
+  
+  // Animation class for revealing new sections
+  const revealClass = "animate-in fade-in slide-in-from-bottom-2 duration-700"
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl mx-auto p-6">
-      <div className="text-3xl leading-relaxed mb-8 flex flex-wrap items-baseline gap-x-2 gap-y-4">
-        <span>I am organizing</span>
-        <Input 
-          placeholder="a birthday party" 
-          value={eventTitle} 
-          onChange={(e) => setEventTitle(e.target.value)} 
-          required 
-          className="mad-libs-input min-w-[200px]" 
+    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto py-6 px-2 sm:px-4">
+      
+      {/* THEME PICKER */}
+      <div className="flex justify-center gap-4 mb-8">
+        <button
+          type="button"
+          onClick={() => setTheme('minimal')}
+          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all ${theme === 'minimal' ? 'border-black scale-110 bg-slate-100' : 'border-transparent hover:bg-slate-50'}`}
+          title="Minimal"
+        >
+          ⚪
+        </button>
+        <button
+          type="button"
+          onClick={() => setTheme('christmas')}
+          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all ${theme === 'christmas' ? 'border-red-500 scale-110 bg-red-50' : 'border-transparent hover:bg-red-50/50'}`}
+          title="Christmas"
+        >
+          🎄
+        </button>
+        <button
+          type="button"
+          onClick={() => setTheme('diwali')}
+          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all ${theme === 'diwali' ? 'border-amber-500 scale-110 bg-amber-50' : 'border-transparent hover:bg-amber-50/50'}`}
+          title="Celebration"
+        >
+          🪔
+        </button>
+        <button
+          type="button"
+          onClick={() => setTheme('birthday')}
+          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all ${theme === 'birthday' ? 'border-blue-500 scale-110 bg-blue-50' : 'border-transparent hover:bg-blue-50/50'}`}
+          title="Birthday"
+        >
+          🎂
+        </button>
+      </div>
+      
+      <div className="text-3xl md:text-4xl leading-[1.8] font-medium text-gray-400 transition-all">
+        
+        {/* STEP 1: Always Visible */}
+        <span className="text-gray-600">I am organizing </span>
+        <input
+          type="text"
+          placeholder="a birthday party"
+          value={eventTitle}
+          onChange={(e) => setEventTitle(e.target.value)}
+          required
+          autoFocus
+          className={`${inputClass} w-[300px] sm:w-auto`}
         />
-        <span>on</span>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="mad-libs-input min-w-[150px]" />
-        <span>at</span>
-        <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className="mad-libs-input min-w-[100px]" />
-        <span>at</span>
-        <Input placeholder="123 Main St" value={location} onChange={(e) => setLocation(e.target.value)} required className="mad-libs-input min-w-[300px]" />
-        <span>.</span>
+
+        {/* STEP 2: Reveals when Title is typed */}
+        {eventTitle.length > 2 && (
+          <span className={revealClass}>
+            <span> on </span>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className={`${inputClass} min-w-[160px]`}
+            />
+          </span>
+        )}
         
-        {/* PRICE SECTION */}
-        <div className="w-full"></div> {/* Line break */}
-        <span>Tickets are</span>
-        <span className="inline-flex items-baseline">
-          <span className="mr-1">£</span>
-          <Input type="number" step="0.01" placeholder="0.00" value={pricePerAdult} onChange={(e) => setPricePerAdult(e.target.value)} className="mad-libs-input min-w-[80px]" />
-        </span>
-        <span>for adults, and</span>
-        <span className="inline-flex items-baseline">
-          <span className="mr-1">£</span>
-          <Input type="number" step="0.01" placeholder="0.00" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className="mad-libs-input min-w-[80px]" />
-        </span>
-        <span>for kids.</span>
+        {/* STEP 3: Reveals when Date is picked */}
+        {date && (
+          <span className={revealClass}>
+            <span> at </span>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              required
+              className={`${inputClass} min-w-[110px]`}
+            />
+          </span>
+        )}
         
-        <div className="w-full"></div> {/* Line break */}
-        <span>Send money to:</span>
-        <Input placeholder="Sort code & Account" value={bankDetails} onChange={(e) => setBankDetails(e.target.value)} className="mad-libs-input min-w-[300px]" />
-        <span>.</span>
+        {/* STEP 4: Reveals when Time is picked */}
+        {time && (
+          <span className={revealClass}>
+            <span> at </span>
+            <input
+              type="text"
+              placeholder="Location / Address"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              required
+              className={`${inputClass} w-full sm:w-[350px]`}
+            />
+            <span>.</span>
+          </span>
+        )}
+
+        {/* STEP 5: The "Optional" Money Section - Reveals after Location */}
+        {location.length > 3 && (
+          <div className={`mt-8 pt-8 border-t border-dashed border-gray-200 ${revealClass}`}>
+             <span className="text-2xl text-gray-500 block mb-4">👇 Optional: Collect Money</span>
+             
+             <span>Tickets are </span>
+             <span className="whitespace-nowrap">
+               £
+               <input
+                 type="number"
+                 step="0.01"
+                 placeholder="0"
+                 value={pricePerAdult}
+                 onChange={(e) => setPricePerAdult(e.target.value)}
+                 className={`${inputClass} w-24 text-3xl`}
+               />
+             </span>
+             <span> for adults.</span>
+             
+             {/* Show Kids price only if Adults price is set */}
+             {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
+                <span className={revealClass}>
+                   <br/>And 
+                   <span className="whitespace-nowrap ml-2">
+                    £
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0"
+                      value={pricePerChild}
+                      onChange={(e) => setPricePerChild(e.target.value)}
+                      className={`${inputClass} w-24 text-3xl`}
+                    />
+                   </span>
+                   <span> for kids.</span>
+                   
+                   <div className="h-6"></div>
+                   <span>Send money to: </span>
+                   <input
+                     type="text"
+                     placeholder="Sort Code & Account"
+                     value={bankDetails}
+                     onChange={(e) => setBankDetails(e.target.value)}
+                     className={`${inputClass} w-full sm:w-[400px]`}
+                   />
+                   <span>.</span>
+                </span>
+             )}
+          </div>
+        )}
+
       </div>
 
-      <Button type="submit" disabled={isLoading} className="min-h-[48px] mt-6 text-lg font-bold">
-        {isLoading ? 'Creating...' : 'Create Event'}
-      </Button>
+      {/* SUBMIT BUTTON - Only appears when minimum fields are ready */}
+      {location.length > 3 && (
+        <div className={`mt-12 text-center ${revealClass}`}>
+          <Button 
+            type="submit" 
+            disabled={isLoading} 
+            size="lg"
+            className="min-w-[240px] text-xl h-16 rounded-full bg-black text-white shadow-xl hover:scale-105 transition-transform"
+          >
+            {isLoading ? 'Creating...' : '🚀 Create Event Link'}
+          </Button>
+        </div>
+      )}
     </form>
   )
 }

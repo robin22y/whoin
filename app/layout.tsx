@@ -10,8 +10,20 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "WhoIn.uk - RSVP Lite",
-  description: "Extreme simple RSVP tool for UK Community Events",
+  title: "WhoIn.uk - Simple Sign-up",
+  description: "Extreme simple sign-up tool for Community Events",
+  manifest: "/manifest.json", // Link to manifest
+  themeColor: "#000000",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "WhoIn",
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <Suspense fallback={children}>
           <PostHogProvider>{children}</PostHogProvider>
         </Suspense>
