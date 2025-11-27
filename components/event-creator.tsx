@@ -182,21 +182,36 @@ export function EventCreator() {
 
                {/* Money Section */}
                <div className="pt-8 border-t border-dashed border-slate-200">
-                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-4">Ticket Price (Optional)</span>
+                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-4">Ticket Price (Leave 0 for Free)</span>
                   
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-2xl text-slate-600">
-                    <span>Adults: £</span>
-                    <input type="number" step="0.01" placeholder="0" value={pricePerAdult} onChange={(e) => setPricePerAdult(e.target.value)} className={`${inputClass} w-24`} />
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-4 text-2xl text-slate-600">
+                    <div className="flex items-baseline gap-1">
+                        <span>Adults: £</span>
+                        <input 
+                            type="number" 
+                            step="0.01" 
+                            placeholder="0" 
+                            value={pricePerAdult} 
+                            onChange={(e) => setPricePerAdult(e.target.value)} 
+                            className={`${inputClass} w-24`} 
+                        />
+                    </div>
                     
-                    {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
-                        <span className={revealClass}>
-                           <span>& Kids: £</span>
-                           <input type="number" step="0.01" placeholder="0" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className={`${inputClass} w-24`} />
-                        </span>
-                    )}
+                    <div className="flex items-baseline gap-1">
+                        <span>Kids: £</span>
+                        <input 
+                            type="number" 
+                            step="0.01" 
+                            placeholder="0" 
+                            value={pricePerChild} 
+                            onChange={(e) => setPricePerChild(e.target.value)} 
+                            className={`${inputClass} w-24`} 
+                        />
+                    </div>
                   </div>
                   
-                  {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
+                  {/* Show Bank Details only if a price is entered */}
+                  {((parseFloat(pricePerAdult) > 0) || (parseFloat(pricePerChild) > 0)) && (
                       <div className={`mt-8 ${revealClass}`}>
                          <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm max-w-lg mx-auto sm:mx-0">
                             <div className="flex items-center gap-2 mb-4 text-slate-500">
