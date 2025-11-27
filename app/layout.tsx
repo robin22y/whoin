@@ -43,6 +43,17 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Whozin",
   },
+  openGraph: {
+    siteName: "Whozin",
+    title: "Whozin - Simple Event Sign-up",
+    description: "The simplest sign-up tool for community events. Create WhatsApp-friendly invite links in 30 seconds.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Whozin - Simple Event Sign-up",
+    description: "The simplest sign-up tool for community events. Create WhatsApp-friendly invite links in 30 seconds.",
+  },
 };
 
 export default function RootLayout({
