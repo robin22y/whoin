@@ -130,24 +130,28 @@
     min-height: 48px; /* Touch-friendly buttons */
   }
   
-  /* Mad Libs underlined inputs - handwritten letter aesthetic */
+  /* Professional form inputs - clear and accessible */
   .mad-libs-input {
-    @apply bg-transparent border-0 border-b-2 border-gray-300 rounded-none px-0 py-0;
+    @apply bg-transparent border-0 border-b-2 border-slate-400 rounded-none px-0 py-0;
     font-size: inherit;
     line-height: inherit;
+    font-weight: 600;
     box-shadow: none;
     outline: none;
     vertical-align: baseline;
-    caret-color: #3b82f6; /* Blue-500 - pulsing caret for high-end feel */
+    caret-color: #0f172a; /* Navy caret */
+    color: #0f172a; /* Navy text for high contrast */
   }
   
   .mad-libs-input:focus {
-    @apply border-black outline-none ring-0;
+    @apply border-slate-600 outline-none ring-0;
     box-shadow: none;
+    border-bottom-width: 2px;
   }
   
   .mad-libs-input::placeholder {
-    @apply text-gray-400;
+    @apply text-slate-500;
+    font-weight: 400;
   }
   
   /* Hide number input spinners */
@@ -173,5 +177,41 @@
   .mad-libs-input[type="time"]::-webkit-calendar-picker-indicator {
     opacity: 0.5;
     cursor: pointer;
+  }
+}
+
+/* Professional color palette overrides */
+@layer utilities {
+  .bg-navy {
+    background-color: #0f172a;
+  }
+  
+  .text-navy {
+    color: #0f172a;
+  }
+  
+  .border-navy {
+    border-color: #0f172a;
+  }
+  
+  .bg-sage {
+    background-color: #10b981;
+  }
+  
+  .text-sage {
+    color: #10b981;
+  }
+  
+  /* High contrast text on warm background */
+  .text-slate-900 {
+    color: #0f172a;
+  }
+  
+  .text-slate-700 {
+    color: #334155;
+  }
+  
+  .text-slate-500 {
+    color: #64748b;
   }
 }

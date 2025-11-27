@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Calistoga } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { Suspense } from "react";
@@ -9,27 +9,17 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-// Fun "Word Art" Font
-const calistoga = Calistoga({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-calistoga',
-});
-
 export const metadata: Metadata = {
-  title: "Whozin - Simple Event Sign-up",
+  title: "Whozin - Effortless Event Sign-ups",
   description: "The simplest sign-up tool for community events. Create WhatsApp-friendly invite links in 30 seconds.",
   keywords: [
     "Whozin",
-    "WhatsApp RSVP",
-    "Event Planner UK",
-    "Sunday Roast",
-    "5-a-side Football",
-    "Pub Quiz",
-    "School Fete",
-    "Diwali",
-    "Christmas",
-    "Community Events"
+    "Dinner Party Planner",
+    "Committee Meeting",
+    "Club Event",
+    "Family Gathering",
+    "Event RSVP",
+    "Event Sign-up"
   ],
   icons: {
     icon: '/favicon.ico',
@@ -37,7 +27,7 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: "/manifest.json",
-  themeColor: "#000000",
+  themeColor: "#0f172a",
   viewport: {
     width: "device-width",
     initialScale: 1,
@@ -68,7 +58,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${calistoga.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <Suspense fallback={children}>
           <PostHogProvider>{children}</PostHogProvider>
         </Suspense>

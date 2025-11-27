@@ -66,6 +66,26 @@ export default async function EventPage({
     })
   }
 
+  // Generate Google Calendar URL
+  const generateCalendarUrl = () => {
+    const startDate = new Date(event.date)
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000) // 2 hours later
+    
+    const formatCalendarDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    }
+    
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: event.title,
+      dates: `${formatCalendarDate(startDate)}/${formatCalendarDate(endDate)}`,
+      details: `Location: ${event.location}\n\n${event.description || ''}`,
+      location: event.location,
+    })
+    
+    return `https://calendar.google.com/calendar/render?${params.toString()}`
+  }
+
   // Theme Logic
   const themes = {
     minimal: {
@@ -140,6 +160,19 @@ export default async function EventPage({
           </div>
         </div>
 
+        {/* Calendar Add Button */}
+        <div className="px-6 pt-4 pb-2">
+          <a
+            href={generateCalendarUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            <Calendar className="w-4 h-4" />
+            Add to Calendar
+          </a>
+        </div>
+
         <div className="p-6 sm:p-8 space-y-8">
           
           {/* WORD ART NOTE */}
@@ -158,7 +191,7 @@ export default async function EventPage({
                   }`}></div>
 
                   {/* Text with Gradient */}
-                  <p className="relative text-2xl sm:text-3xl font-black leading-tight tracking-tight font-[family-name:var(--font-calistoga)]"
+                  <p className="relative text-2xl sm:text-3xl font-bold leading-tight tracking-tight"
                      style={{
                        background: 
                          // @ts-ignore
@@ -203,25 +236,32 @@ export default async function EventPage({
           />
 
           {guests && guests.length > 0 && (
-            <div className="pt-8 border-t border-dashed border-slate-200">
-              <div className={`flex items-center justify-center gap-2 mb-6 ${currentTheme.text} opacity-60`}>
+            <div className="pt-8 border-t border-slate-200">
+              <div className={`flex items-center justify-center gap-2 mb-6 ${currentTheme.text} opacity-70`}>
                 <Users className="w-4 h-4" />
-                <span className="text-sm font-bold uppercase tracking-wider">Who is in? ({guests.length})</span>
+                <span className="text-sm font-semibold uppercase tracking-wider">Attendees ({guests.length})</span>
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="space-y-2">
                 {guests.map((guest) => (
-                  <span key={guest.id} className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-slate-100/80 text-slate-700 border border-slate-200">
-                    {guest.name}
-                    {(guest.adult_count + guest.kid_count) > 1 && (
-                      <span className="ml-1.5 text-[10px] font-bold bg-slate-300 text-slate-600 px-1.5 py-0.5 rounded-full">
-                        +{guest.adult_count + guest.kid_count - 1}
-                      </span>
-                    )}
-                  </span>
+                  <div key={guest.id} className="flex items-center justify-between px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                    <span className="font-medium text-slate-900">{guest.name}</span>
+                    <span className="text-sm text-slate-600">
+                      {guest.adult_count} adult{guest.adult_count !== 1 ? 's' : ''}
+                      {guest.kid_count > 0 && `, ${guest.kid_count} kid${guest.kid_count !== 1 ? 's' : ''}`}
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Trust Signal */}
+          <div className="pt-6 mt-6 border-t border-slate-200">
+            <p className="text-xs text-slate-500 text-center flex items-center justify-center gap-1">
+              <span>🔒</span>
+              <span>Your data is private and auto-deleted in 30 days.</span>
+            </p>
+          </div>
         </div>
       </main>
       
