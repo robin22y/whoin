@@ -22,7 +22,7 @@ export function ShareCard({ eventId, shortCode, eventTitle, eventDate, eventLoca
   // Logic: Use Short Code if available, otherwise fallback to UUID
   const eventLink = typeof window !== 'undefined' 
     ? `${window.location.origin}/e/${shortCode || eventId}`
-    : `whozin.app/e/${shortCode || eventId}`
+    : `whozin.uk/e/${shortCode || eventId}`
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-GB', {
