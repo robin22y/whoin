@@ -39,7 +39,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             fontWeight: 800,
             fontSize: 80,
         }}>
-          Whozin
+          The Invite Link
         </div>
       )
     )
@@ -138,7 +138,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                 padding: '10px 30px',
                 borderRadius: 50,
             }}>
-                RSVP via Whozin
+                RSVP via The Invite Link
             </div>
         </div>
       </div>

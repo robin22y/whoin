@@ -6,7 +6,9 @@ import { Footer } from '@/components/footer'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, MapPin, Users } from 'lucide-react'
+import { Calendar, MapPin, Users, ChevronDown } from 'lucide-react'
+
+// ... (keep metadata and helper functions same as before) ...
 
 export async function generateMetadata({
   params,
@@ -29,6 +31,7 @@ export default async function EventPage({
   const { id } = await params
   const supabase = await createClient()
 
+  // ... (keep query logic same) ...
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
   let query = supabase
@@ -79,20 +82,20 @@ export default async function EventPage({
       action: 'TEMPLATE',
       text: event.title,
       dates: `${formatCalendarDate(startDate)}/${formatCalendarDate(endDate)}`,
-      details: `Location: ${event.location}\n\n${event.description || ''}`,
+      details: `Location: ${event.location}${event.description ? `\n\n${event.description}` : ''}`,
       location: event.location,
     })
     
     return `https://calendar.google.com/calendar/render?${params.toString()}`
   }
 
-  // Theme Logic
+  // Theme Logic (Updated to match new style if needed)
   const themes = {
     minimal: {
       bg: "bg-[#F7F6F3]",
       pattern: "radial-gradient(#e5e7eb 1px, transparent 1px)",
-      header: "bg-slate-900",
-      text: "text-slate-900"
+      header: "bg-[#0F172A]", // Navy
+      text: "text-[#0F172A]"
     },
     christmas: {
       bg: "bg-[#FEF2F2]",
@@ -118,154 +121,135 @@ export default async function EventPage({
   const currentTheme = themes[event.theme] || themes.minimal
 
   return (
-    <div className={`min-h-screen flex flex-col items-center px-4 font-sans ${currentTheme.bg} transition-colors duration-500`}>
+    <div className={`min-h-screen flex flex-col items-center font-sans ${currentTheme.bg} transition-colors duration-500 selection:bg-black selection:text-white`}>
       
       {/* Background Pattern */}
       <div className="fixed inset-0 h-full w-full pointer-events-none z-0 opacity-[0.4]" 
            style={{ backgroundImage: currentTheme.pattern, backgroundSize: '24px 24px' }}>
       </div>
 
-      {/* NEW BRAND HEADER */}
-      <header className="relative z-10 w-full max-w-md flex justify-between items-center py-6">
-        <Link href="/" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
-           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm ${currentTheme.header}`}>
-              W
+      {/* Global Brand Header */}
+      <header className="relative z-10 w-full max-w-md py-6 flex justify-center">
+         <Link href="/" className="flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
+            <div className="w-6 h-6 bg-[#0F172A] rounded-md flex items-center justify-center text-white font-bold text-xs shadow-sm">
+               {/* Simple SVG Icon */}
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+               </svg>
             </div>
-            <span className={`font-bold text-xl tracking-tight ${currentTheme.text}`}>Whozin</span>
-        </Link>
+            <span className="font-bold text-lg text-[#0F172A] tracking-tight">The Invite Link</span>
+         </Link>
       </header>
 
-      <main className="relative z-10 w-full max-w-md bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden border border-white/50 ring-1 ring-black/5 mb-12">
+      <main className="relative z-10 w-full max-w-[420px] px-4 mb-12">
         
-        {/* EVENT HEADER */}
-        <div className={`${currentTheme.header} text-white p-8 text-center relative transition-colors duration-500`}>
-          {isOrganizer && (
-            <div className="absolute top-4 right-4">
-              <div className="[&>a>button]:bg-white/10 [&>a>button]:text-white [&>a>button]:border-white/20 [&>a>button]:hover:bg-white/20">
-                <ManageButton eventId={event.id} />
-              </div>
-            </div>
-          )}
-          <h1 className="text-3xl font-bold mb-4 leading-tight">{event.title}</h1>
+        {/* THE INVITE CARD */}
+        <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100 ring-1 ring-black/5">
           
-          <div className="flex flex-col items-center gap-2 text-white/80 text-sm font-medium">
-            <div className="flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>{formatDate(event.date)}</span>
-            </div>
-            <div className="flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>{event.location}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Calendar Add Button */}
-        <div className="px-6 pt-4 pb-2">
-          <a
-            href={generateCalendarUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-          >
-            <Calendar className="w-4 h-4" />
-            Add to Calendar
-          </a>
-        </div>
-
-        <div className="p-6 sm:p-8 space-y-8">
-          
-          {/* WORD ART NOTE */}
-          {event.description && (
-            <div className="relative py-6 px-4 text-center group perspective-1000">
-               <div className="relative inline-block transform transition-transform duration-500 hover:scale-105 hover:rotate-2 cursor-default">
-                  {/* Glow Background */}
-                  <div className={`absolute -inset-4 opacity-20 blur-xl rounded-[50%] ${
-                      // @ts-ignore
-                      event.theme === 'christmas' ? 'bg-red-500' :
-                      // @ts-ignore
-                      event.theme === 'diwali' ? 'bg-amber-400' :
-                      // @ts-ignore
-                      event.theme === 'birthday' ? 'bg-blue-400' :
-                      'bg-pink-400'
-                  }`}></div>
-
-                  {/* Text with Gradient */}
-                  <p className="relative text-2xl sm:text-3xl font-bold leading-tight tracking-tight"
-                     style={{
-                       background: 
-                         // @ts-ignore
-                         event.theme === 'christmas' ? 'linear-gradient(to bottom right, #ef4444, #b91c1c)' :
-                         // @ts-ignore
-                         event.theme === 'diwali' ? 'linear-gradient(to bottom right, #d97706, #b45309)' :
-                         // @ts-ignore
-                         event.theme === 'birthday' ? 'linear-gradient(to bottom right, #2563eb, #1e40af)' :
-                         'linear-gradient(to bottom right, #1f2937, #000000)',
-                       WebkitBackgroundClip: 'text',
-                       WebkitTextFillColor: 'transparent',
-                       filter: 'drop-shadow(2px 4px 0px rgba(0,0,0,0.05))'
-                     }}
-                  >
-                    " {event.description} "
-                  </p>
-               </div>
-            </div>
-          )}
-
-          {/* Organizer Share Control */}
-          {isOrganizer && (
-            <div className="mb-8 p-1 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
-              <div className="bg-white rounded-xl p-4 shadow-sm">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">Organizer Controls</p>
-                <ShareCard
-                  eventId={event.id}
-                  shortCode={event.short_code}
-                  eventTitle={event.title}
-                  eventDate={event.date}
-                  eventLocation={event.location}
-                />
-              </div>
-            </div>
-          )}
-
-          <GuestForm
-            eventId={event.id}
-            pricePerAdult={event.price_per_adult || 0}
-            pricePerChild={event.price_per_child || 0}
-            bankDetails={event.bank_details || ''}
-          />
-
-          {guests && guests.length > 0 && (
-            <div className="pt-8 border-t border-slate-200">
-              <div className={`flex items-center justify-center gap-2 mb-6 ${currentTheme.text} opacity-70`}>
-                <Users className="w-4 h-4" />
-                <span className="text-sm font-semibold uppercase tracking-wider">Attendees ({guests.length})</span>
-              </div>
-              <div className="space-y-2">
-                {guests.map((guest) => (
-                  <div key={guest.id} className="flex items-center justify-between px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
-                    <span className="font-medium text-slate-900">{guest.name}</span>
-                    <span className="text-sm text-slate-600">
-                      {guest.adult_count} adult{guest.adult_count !== 1 ? 's' : ''}
-                      {guest.kid_count > 0 && `, ${guest.kid_count} kid${guest.kid_count !== 1 ? 's' : ''}`}
-                    </span>
+          {/* Card Header */}
+          <div className={`${currentTheme.header} p-8 text-center text-white relative overflow-hidden`}>
+             
+             {/* Organizer Actions (Top Right) */}
+             {isOrganizer && (
+                <div className="absolute top-4 right-4 z-20">
+                  <div className="[&>a>button]:bg-white/10 [&>a>button]:text-white [&>a>button]:border-white/20 [&>a>button]:hover:bg-white/20 [&>a>button]:h-8 [&>a>button]:text-xs">
+                    <ManageButton eventId={event.id} />
                   </div>
+                </div>
+             )}
+             
+             <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 leading-tight tracking-tight relative z-10">{event.title}</h1>
+             
+             <div className="inline-flex flex-col gap-1.5 mt-2 text-sm font-medium text-white/90 relative z-10">
+                <div className="flex items-center justify-center gap-2">
+                  <Calendar className="w-4 h-4 opacity-80" /> 
+                  <span>{formatDate(event.date)}</span>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <MapPin className="w-4 h-4 opacity-80" /> 
+                  <span>{event.location}</span>
+                </div>
+                
+                {/* Add to Calendar Button */}
+                <div className="mt-3 pt-3 border-t border-white/20 w-full flex justify-center">
+                   <a
+                     href={generateCalendarUrl()}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white text-xs font-medium hover:bg-white/20 transition-colors"
+                   >
+                     <Calendar className="w-3.5 h-3.5" />
+                     Add to Calendar
+                   </a>
+                </div>
+             </div>
+          </div>
+
+          {/* Card Body */}
+          <div className="p-6 sm:p-8">
+            
+            {/* ORGANIZER CONTROLS (Collapsed by default to reduce clutter) */}
+            {isOrganizer && (
+              <details className="mb-8 group bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100 transition-colors">
+                  Organizer: Share Link
+                  <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="p-4 border-t border-slate-200 bg-white">
+                  <ShareCard
+                    eventId={event.id}
+                    shortCode={event.short_code}
+                    eventTitle={event.title}
+                    eventDate={event.date}
+                    eventLocation={event.location}
+                  />
+                </div>
+              </details>
+            )}
+
+            {/* Personal Note */}
+            {event.description && (
+              <div className="mb-8 text-center px-4">
+                <p className="text-lg font-medium text-slate-600 italic leading-relaxed">
+                  "{event.description}"
+                </p>
+              </div>
+            )}
+
+            <GuestForm
+              eventId={event.id}
+              pricePerAdult={event.price_per_adult || 0}
+              pricePerChild={event.price_per_child || 0}
+              bankDetails={event.bank_details || ''}
+            />
+          </div>
+
+          {/* Guest List Footer */}
+          {guests && guests.length > 0 && (
+            <div className="bg-slate-50 border-t border-slate-100 p-6">
+              <div className="flex items-center justify-center gap-2 mb-4 opacity-50">
+                <Users className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Who is in? ({guests.length})</span>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {guests.map((guest) => (
+                  <span key={guest.id} className="inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-700 shadow-sm">
+                    {guest.name}
+                    {(guest.adult_count + guest.kid_count) > 1 && (
+                      <span className="ml-1.5 text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 rounded-full border border-slate-200">
+                        +{guest.adult_count + guest.kid_count - 1}
+                      </span>
+                    )}
+                  </span>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Trust Signal */}
-          <div className="pt-6 mt-6 border-t border-slate-200">
-            <p className="text-xs text-slate-500 text-center flex items-center justify-center gap-1">
-              <span>🔒</span>
-              <span>Your data is private and auto-deleted in 30 days.</span>
-            </p>
-          </div>
+        
         </div>
       </main>
       
-      <div className="opacity-60 hover:opacity-100 transition-opacity pb-8">
+      <div className="pb-8 opacity-50 text-xs text-slate-500 hover:opacity-100 transition-opacity">
         <Footer />
       </div>
     </div>

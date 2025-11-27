@@ -22,7 +22,7 @@ export function ShareCard({ eventId, shortCode, eventTitle, eventDate, eventLoca
   // Logic: Use Short Code if available, otherwise fallback to UUID
   const eventLink = typeof window !== 'undefined' 
     ? `${window.location.origin}/e/${shortCode || eventId}`
-    : `whozin.uk/e/${shortCode || eventId}`
+    : `theinvitelink.com/e/${shortCode || eventId}`
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-GB', {
@@ -42,7 +42,7 @@ export function ShareCard({ eventId, shortCode, eventTitle, eventDate, eventLoca
 
   const shareOnWhatsApp = () => {
     const formattedDate = formatDate(eventDate)
-    let message = `You're invited to ${eventTitle}! 📅 ${formattedDate} 📍 ${eventLocation}. Sign up here: ${eventLink} (Made with Whozin)`
+    let message = `You're invited to ${eventTitle}! 📅 ${formattedDate} 📍 ${eventLocation}. Sign up here: ${eventLink} (via theinvitelink.com)`
     
     if (includeCalendar) {
       message += '\n\nP.S. Save this to your calendar'

@@ -10,15 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Whozin - Effortless Event Sign-ups",
-  description: "The simplest sign-up tool for community events. Create WhatsApp-friendly invite links in 30 seconds.",
+  title: "The Invite Link - Simple Event Sign-ups",
+  description: "The simplest way to create an event. Just share the link and get a list.",
   keywords: [
-    "Whozin",
-    "Dinner Party Planner",
-    "Committee Meeting",
-    "Club Event",
-    "Family Gathering",
-    "Event RSVP",
+    "Invite Link Generator",
+    "RSVP Link",
+    "Event Planner",
+    "WhatsApp Invite",
     "Event Sign-up"
   ],
   icons: {
@@ -36,18 +34,18 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Whozin",
+    title: "The Invite Link",
   },
   openGraph: {
-    siteName: "Whozin",
-    title: "Whozin - Simple Event Sign-up",
-    description: "The simplest sign-up tool for community events. Create WhatsApp-friendly invite links in 30 seconds.",
+    siteName: "The Invite Link",
+    title: "The Invite Link - Simple Event Sign-ups",
+    description: "The simplest way to create an event. Just share the link and get a list.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Whozin - Simple Event Sign-up",
-    description: "The simplest sign-up tool for community events. Create WhatsApp-friendly invite links in 30 seconds.",
+    title: "The Invite Link - Simple Event Sign-ups",
+    description: "The simplest way to create an event. Just share the link and get a list.",
   },
 };
 

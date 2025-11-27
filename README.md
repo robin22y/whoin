@@ -1,4 +1,4 @@
-# Whozin - Event Sign-up
+# The Invite Link - Event Sign-up
 
 Extreme simple sign-up tool for Community Events.
 

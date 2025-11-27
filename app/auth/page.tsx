@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Footer } from '@/components/footer'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function AuthPage() {
   const [email, setEmail] = useState('')
@@ -150,10 +151,14 @@ export default function AuthPage() {
       {/* HEADER */}
       <header className="relative z-20 w-full px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
-           <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              W
-            </div>
-            <span className="font-bold text-xl tracking-tight">Whozin</span>
+           <Image 
+             src="/logo.svg" 
+             alt="The Invite Link Logo" 
+             width={32} 
+             height={32} 
+             className="group-hover:opacity-80 transition-opacity"
+           />
+            <span className="font-bold text-xl tracking-tight">The Invite Link</span>
         </Link>
       </header>
 

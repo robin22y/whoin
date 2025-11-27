@@ -1,6 +1,6 @@
 {
-  "name": "Whozin",
-  "short_name": "Whozin",
+  "name": "The Invite Link",
+  "short_name": "InviteLink",
   "description": "Simple event sign-up tool",
   "start_url": "/",
   "display": "standalone",
