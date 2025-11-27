@@ -2,13 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { GuestForm } from '@/components/guest-form'
 import { ShareCard } from '@/components/share-card'
 import { ManageButton } from '@/components/manage-button'
+import { AddToCalendar } from '@/components/add-to-calendar'
 import { Footer } from '@/components/footer'
-import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
-import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
-import { Calendar, MapPin, Users, ChevronDown, ShieldAlert } from 'lucide-react'
+import { Calendar, MapPin, Users, ChevronDown, Clock } from 'lucide-react'
+import type { Metadata } from 'next'
 
 export async function generateMetadata({
   params,
@@ -31,11 +30,13 @@ export default async function EventPage({
   const { id } = await params
   const supabase = await createClient()
 
+  // 1. Check if it's a UUID (Old Link) or Short Code (New Link)
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
+  // 2. CRITICAL: Fetch 'banner_url', 'theme', 'description', etc.
   let query = supabase
     .from('events')
-    .select('id, title, date, location, bank_details, price_per_adult, price_per_child, user_id, theme, short_code, description, banner_url, is_suspended')
+    .select('id, title, date, location, bank_details, price_per_adult, price_per_child, user_id, theme, short_code, description, banner_url')
 
   if (isUUID) {
     query = query.eq('id', id)
@@ -49,25 +50,6 @@ export default async function EventPage({
     notFound()
   }
 
-  // @ts-ignore
-  if (event.is_suspended) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
-          <ShieldAlert className="w-8 h-8 text-red-600" />
-        </div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Event Suspended</h1>
-        <p className="text-slate-500 max-w-md">
-          This event has been flagged for violating our terms of service or due to a safety report. 
-          The invite link is no longer active.
-        </p>
-        <Link href="/" className="mt-8">
-          <Button>Go Home</Button>
-        </Link>
-      </div>
-    )
-  }
-
   const { data: guests } = await supabase
     .from('guests')
     .select('*')
@@ -77,156 +59,106 @@ export default async function EventPage({
   const { data: { user } } = await supabase.auth.getUser()
   const isOrganizer = user && event.user_id === user.id
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-GB', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
+  const eventDate = new Date(event.date)
+  const dateStr = eventDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+  const timeStr = eventDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
-  const generateCalendarUrl = () => {
-    const startDate = new Date(event.date)
-    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000)
-    
-    const formatCalendarDate = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
-    }
-    
-    const params = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: event.title,
-      dates: `${formatCalendarDate(startDate)}/${formatCalendarDate(endDate)}`,
-      details: `Location: ${event.location}${event.description ? `\n\n${event.description}` : ''}`,
-      location: event.location,
-    })
-    
-    return `https://calendar.google.com/calendar/render?${params.toString()}`
-  }
-
+  // Theme Logic
   const themes = {
-    minimal: {
-      bg: "bg-[#F7F6F3]",
-      pattern: "radial-gradient(#e5e7eb 1px, transparent 1px)",
-      header: "bg-[#0F172A]",
-      text: "text-[#0F172A]"
-    },
-    christmas: {
-      bg: "bg-[#FEF2F2]",
-      pattern: "radial-gradient(#FECACA 2px, transparent 2px)",
-      header: "bg-red-700",
-      text: "text-red-900"
-    },
-    diwali: {
-      bg: "bg-[#FFFBEB]",
-      pattern: "radial-gradient(#FCD34D 2px, transparent 2px)",
-      header: "bg-amber-600",
-      text: "text-amber-900"
-    },
-    birthday: {
-      bg: "bg-[#EFF6FF]",
-      pattern: "radial-gradient(#93C5FD 2px, transparent 2px)",
-      header: "bg-blue-600",
-      text: "text-blue-900"
-    }
+    minimal: { bg: "bg-[#F7F6F3]", header: "bg-[#0F172A]", text: "text-[#0F172A]" },
+    christmas: { bg: "bg-[#FEF2F2]", header: "bg-red-700", text: "text-red-900" },
+    diwali: { bg: "bg-[#FFFBEB]", header: "bg-amber-600", text: "text-amber-900" },
+    birthday: { bg: "bg-[#EFF6FF]", header: "bg-blue-600", text: "text-blue-900" }
   }
-
+  
   // @ts-ignore
   const currentTheme = themes[event.theme] || themes.minimal
 
   return (
     <div className={`min-h-screen flex flex-col items-center font-sans ${currentTheme.bg} transition-colors duration-500 selection:bg-black selection:text-white`}>
       
+      {/* Background Pattern */}
       <div className="fixed inset-0 h-full w-full pointer-events-none z-0 opacity-[0.4]" 
-           style={{ backgroundImage: currentTheme.pattern, backgroundSize: '24px 24px' }}>
+           style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
       </div>
 
-      {/* Updated Logo (Matches Home Page) */}
-      <header className="relative z-10 w-full max-w-md py-6 flex justify-center">
-         <Link href="/" className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#0F172A] shadow-lg shadow-black/5 group-hover:scale-105 transition-transform">
-               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-               </svg>
-            </div>
-            <span className="font-bold text-xl tracking-tight text-[#0F172A] drop-shadow-sm">The Invite Link</span>
-         </Link>
+      {/* HEADER with Dark Background - Matching Home Page */}
+      <header className="relative z-10 w-full bg-[#0F172A] py-4 flex justify-center">
+         <div className="w-full max-w-md px-6 flex justify-center">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
+               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#0F172A] font-bold text-xl shadow-lg shadow-white/10 group-hover:scale-110 transition-transform">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                  </svg>
+               </div>
+               <span className="font-bold text-xl tracking-tight text-white">The Invite Link</span>
+            </Link>
+         </div>
       </header>
 
-      <main className="relative z-10 w-full max-w-[420px] px-4 mb-12">
+      <main className="relative z-10 w-full max-w-[420px] px-4 mb-12 mt-4">
         
+        {/* THE INVITE CARD */}
         <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100 ring-1 ring-black/5">
           
-          {/* Header with Banner Support */}
-          <div className={`${currentTheme.header} p-8 text-center text-white relative overflow-hidden min-h-[220px] flex flex-col justify-center`}>
-             
-             {/* BANNER IMAGE BACKGROUND (If available) */}
-             {event.banner_url && (
-               <>
-                 <Image 
-                   src={event.banner_url} 
-                   alt="Event Banner" 
-                   fill 
-                   className="object-cover"
-                   priority
-                 />
-                 {/* Dark Overlay so white text is readable */}
-                 <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
-               </>
-             )}
+          {/* BANNER IMAGE - Reduced height to prevent scrolling */}
+          {event.banner_url && (
+            <div className="relative w-full h-32 sm:h-40 bg-slate-100">
+               <img 
+                 src={event.banner_url} 
+                 alt="Event Banner" 
+                 className="w-full h-full object-cover"
+               />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+            </div>
+          )}
 
-             {/* Organizer Actions */}
+          {/* Card Header - More compact */}
+          <div className={`${currentTheme.header} p-6 sm:p-7 text-center text-white relative overflow-hidden`}>
              {isOrganizer && (
                 <div className="absolute top-4 right-4 z-20">
-                  <div className="[&>a>button]:bg-black/30 [&>a>button]:text-white [&>a>button]:border-white/20 [&>a>button]:hover:bg-black/50 [&>a>button]:h-8 [&>a>button]:text-xs [&>a>button]:backdrop-blur-md">
+                  <div className="[&>a>button]:bg-white/10 [&>a>button]:text-white [&>a>button]:border-white/20 [&>a>button]:hover:bg-white/20 [&>a>button]:h-8 [&>a>button]:text-xs">
                     <ManageButton eventId={event.id} />
                   </div>
                 </div>
              )}
              
-             <div className="relative z-10">
-                <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 leading-tight tracking-tight drop-shadow-md">
-                  {event.title}
-                </h1>
+             <h1 className="text-2xl sm:text-3xl font-extrabold mb-2 leading-tight tracking-tight relative z-10">{event.title}</h1>
+             
+             <div className="inline-flex flex-col gap-1 mt-1.5 text-xs sm:text-sm font-medium text-white/90 relative z-10">
+                <div className="flex items-center justify-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 opacity-80" /> 
+                  <span>{dateStr}</span>
+                </div>
+                <div className="flex items-center justify-center gap-1.5">
+                   <Clock className="w-3.5 h-3.5 opacity-80" />
+                   <span>{timeStr}</span>
+                </div>
+                <div className="flex items-center justify-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 opacity-80" /> 
+                  <span className="max-w-[280px] truncate">{event.location}</span>
+                </div>
                 
-                <div className="inline-flex flex-col gap-1.5 mt-2 text-sm font-medium text-white/90">
-                    <div className="flex items-center justify-center gap-2 drop-shadow-sm">
-                      <Calendar className="w-4 h-4 opacity-90" /> 
-                      <span>{formatDate(event.date)}</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 drop-shadow-sm">
-                      <MapPin className="w-4 h-4 opacity-90" /> 
-                      <span>{event.location}</span>
-                    </div>
-                    
-                    <div className="mt-4 pt-4 w-full flex justify-center">
-                      <a
-                        href={generateCalendarUrl()}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 border border-white/30 rounded-full text-white text-xs font-bold uppercase tracking-wide hover:bg-white/30 transition-all shadow-sm backdrop-blur-md"
-                      >
-                        <Calendar className="w-3.5 h-3.5" />
-                        Add to Calendar
-                      </a>
-                    </div>
+                <div className="mt-2 pt-2 border-t border-white/20 w-full flex justify-center">
+                   <div className="[&>button]:bg-white/10 [&>button]:text-white [&>button]:border-white/20 [&>button]:hover:bg-white/20 [&>button]:h-7 [&>button]:text-xs [&>button]:px-3">
+                      <AddToCalendar event={event} />
+                   </div>
                 </div>
              </div>
           </div>
 
-          {/* Card Body */}
-          <div className="p-6 sm:p-8">
+          {/* Card Body - Reduced padding */}
+          <div className="p-5 sm:p-6">
             
+            {/* Organizer Controls */}
             {isOrganizer && (
-              <details className="mb-8 group bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
-                <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100 transition-colors">
-                  Organizer: Share Link
-                  <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+              <details className="mb-4 group bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                <summary className="flex items-center justify-between px-3 py-2 cursor-pointer list-none text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100 transition-colors">
+                  Organizer Controls
+                  <ChevronDown className="w-3.5 h-3.5 transition-transform group-open:rotate-180" />
                 </summary>
-                <div className="p-4 border-t border-slate-200 bg-white">
+                <div className="p-3 border-t border-slate-200 bg-white">
                   <ShareCard
                     eventId={event.id}
                     shortCode={event.short_code}
@@ -238,9 +170,10 @@ export default async function EventPage({
               </details>
             )}
 
+            {/* Personal Note - More compact */}
             {event.description && (
-              <div className="mb-8 text-center px-4">
-                <p className="text-lg font-medium text-slate-600 italic leading-relaxed">
+              <div className="mb-4 text-center px-2">
+                <p className="text-base sm:text-lg font-medium text-slate-600 italic leading-relaxed">
                   "{event.description}"
                 </p>
               </div>
@@ -254,7 +187,7 @@ export default async function EventPage({
             />
           </div>
 
-          {/* Guest List Footer */}
+          {/* Guest List */}
           {guests && guests.length > 0 && (
             <div className="bg-slate-50 border-t border-slate-100 p-6">
               <div className="flex items-center justify-center gap-2 mb-4 opacity-50">
@@ -275,6 +208,7 @@ export default async function EventPage({
               </div>
             </div>
           )}
+        
         </div>
       </main>
       

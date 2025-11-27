@@ -11,12 +11,25 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T)
     try {
       const item = window.localStorage.getItem(key)
       if (item) {
-        setStoredValue(JSON.parse(item))
+        // Try to parse as JSON, but if it fails, use the raw string value
+        try {
+          setStoredValue(JSON.parse(item))
+        } catch {
+          // If parsing fails, it might be a plain string value
+          // For string types, use the raw value; otherwise use initialValue
+          if (typeof initialValue === 'string') {
+            setStoredValue(item as T)
+          } else {
+            // If it's not a string type, clear the invalid value
+            window.localStorage.removeItem(key)
+            setStoredValue(initialValue)
+          }
+        }
       }
     } catch (error) {
       console.error(`Error reading localStorage key "${key}":`, error)
     }
-  }, [key])
+  }, [key, initialValue])
 
   const setValue = (value: T) => {
     try {

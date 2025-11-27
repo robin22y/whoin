@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,7 @@ function generateShortCode() {
 }
 
 export function EventCreator() {
+  const [mounted, setMounted] = useState(false)
   const [eventTitle, setEventTitle] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -28,6 +29,10 @@ export function EventCreator() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -98,6 +103,28 @@ export function EventCreator() {
     { id: 'christmas', color: 'bg-red-50 hover:bg-red-100', activeColor: 'ring-2 ring-red-500 bg-red-50', icon: Gift, label: 'Holiday' },
     { id: 'diwali', color: 'bg-amber-50 hover:bg-amber-100', activeColor: 'ring-2 ring-amber-500 bg-amber-50', icon: Flame, label: 'Festive' },
   ]
+
+  if (!mounted) {
+    return (
+      <div className="max-w-3xl mx-auto py-8 px-4">
+        <div className="flex flex-col items-center mb-12 space-y-3">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Select Theme</span>
+          <div className="flex items-center gap-3 p-1.5 bg-slate-50/80 backdrop-blur-sm border border-slate-200/60 rounded-full shadow-sm">
+            {themeOptions.map((t) => (
+              <div
+                key={t.id}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100"
+              />
+            ))}
+          </div>
+        </div>
+        <div className="text-3xl md:text-4xl leading-[1.8] font-medium text-slate-300 text-center sm:text-left">
+          <span className="text-slate-500">I am organizing </span>
+          <span className="inline-block w-[280px] h-[1.2em] border-b-2 border-slate-300"></span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">

@@ -54,31 +54,98 @@ export function ImageUpload({ onUploadComplete, defaultImage }: ImageUploadProps
     if (!e.target.files || e.target.files.length === 0) return
     
     const file = e.target.files[0]
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.')
+      return
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image size must be less than 10MB. Please choose a smaller image.')
+      return
+    }
+
     setIsUploading(true)
 
     try {
+      // Check authentication
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        alert('Please log in to upload images.')
+        setIsUploading(false)
+        return
+      }
+
       const compressedBlob = await processImage(file)
       const fileName = `${Math.random().toString(36).substring(7)}-${Date.now()}.webp`
       
-      const { error } = await supabase.storage
+      const { data, error } = await supabase.storage
         .from('banners')
         .upload(fileName, compressedBlob, {
           contentType: 'image/webp',
-          cacheControl: '31536000'
+          cacheControl: '31536000',
+          upsert: false
         })
 
-      if (error) throw error
+      if (error) {
+        console.error('Storage upload error:', error)
+        // Provide more specific error messages
+        if (error.message?.includes('new row violates row-level security policy') || error.message?.includes('violates row-level security')) {
+          alert('Storage policy error: The INSERT policy exists but may be misconfigured. Please check:\n1. Policy target role is "authenticated" (not "anon")\n2. WITH CHECK expression is: bucket_id = \'banners\'\n3. Edit the existing policy in Storage → Policies → BANNERS section')
+        } else if (error.message?.includes('Bucket not found')) {
+          alert('Storage bucket "banners" not found. Please create it in Supabase Storage settings.')
+        } else if (error.message?.includes('duplicate') || error.message?.includes('already exists')) {
+          // Try again with a different filename
+          const retryFileName = `${Math.random().toString(36).substring(7)}-${Date.now()}.webp`
+          const { error: retryError } = await supabase.storage
+            .from('banners')
+            .upload(retryFileName, compressedBlob, {
+              contentType: 'image/webp',
+              cacheControl: '31536000'
+            })
+          if (retryError) {
+            throw retryError
+          }
+          const { data: { publicUrl } } = supabase.storage
+            .from('banners')
+            .getPublicUrl(retryFileName)
+          setPreview(publicUrl)
+          onUploadComplete(publicUrl)
+          setIsUploading(false)
+          return
+        } else if (error.message?.includes('JWT') || error.message?.includes('permission') || error.message?.includes('policy')) {
+          alert('Permission denied. Please check your storage bucket policies allow authenticated uploads.')
+        } else {
+          throw error
+        }
+      } else {
+        const { data: { publicUrl } } = supabase.storage
+          .from('banners')
+          .getPublicUrl(fileName)
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('banners')
-        .getPublicUrl(fileName)
+        setPreview(publicUrl)
+        onUploadComplete(publicUrl)
+      }
 
-      setPreview(publicUrl)
-      onUploadComplete(publicUrl)
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload failed:', error)
-      alert('Failed to upload image. Please try again.')
+      const errorMessage = error?.message || 'Unknown error occurred'
+      
+      // More user-friendly error messages
+      let userMessage = 'Failed to upload image. '
+      if (errorMessage.includes('Bucket not found')) {
+        userMessage += 'The storage bucket does not exist. Please create a "banners" bucket in Supabase Storage.'
+      } else if (errorMessage.includes('permission') || errorMessage.includes('policy')) {
+        userMessage += 'You do not have permission to upload. Please check storage policies.'
+      } else if (errorMessage.includes('JWT')) {
+        userMessage += 'Authentication failed. Please try logging in again.'
+      } else {
+        userMessage += `Error: ${errorMessage}`
+      }
+      
+      alert(userMessage)
     } finally {
       setIsUploading(false)
     }
