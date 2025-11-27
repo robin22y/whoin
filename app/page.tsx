@@ -112,48 +112,48 @@ export default function Home() {
         />
       </main>
 
-      {/* SEO FAQ SECTION (Updated for Inclusivity) */}
-      <div className="w-full max-w-3xl mt-24 mb-12 px-6 text-left">
-        <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">
-          Frequently Asked Questions
-        </h2>
-        
-        <div className="space-y-4">
-          <details className="group bg-white/60 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 p-4 open:pb-6 cursor-pointer">
-            <summary className="flex items-center justify-between font-semibold text-slate-700 list-none select-none">
-              Is this tool really free for community events?
-              <span className="transition group-open:rotate-180">▼</span>
-            </summary>
-            <p className="text-slate-500 mt-4 leading-relaxed">
-              Yes! Whozin is a 100% free sign-up tool designed for all communities. 
-              It is perfect for organizing <strong>Sunday Roasts, 5-a-side Football, Pub Quizzes, School Fetes</strong>, as well as <strong>Diwali Parties and Christmas Dinners</strong>.
-              We don't charge booking fees for free events.
-            </p>
-          </details>
-
-          <details className="group bg-white/60 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 p-4 open:pb-6 cursor-pointer">
-            <summary className="flex items-center justify-between font-semibold text-slate-700 list-none select-none">
-              Do guests need to download an app?
-              <span className="transition group-open:rotate-180">▼</span>
-            </summary>
-            <p className="text-slate-500 mt-4 leading-relaxed">
-              No. "Downloading an app" kills participation. 
-              Your guests just click the link (which works perfectly on <strong>WhatsApp</strong>), type their name, and click "I'm In". 
-              It works on any phone, no login required.
-            </p>
-          </details>
+      {/* DISCREET FAQ SECTION */}
+      <div className="w-full max-w-2xl mt-32 mb-8 px-6">
+        <details className="group">
+          <summary className="list-none cursor-pointer text-center">
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">
+              Frequently Asked Questions
+              <span className="transition-transform group-open:rotate-180">▼</span>
+            </span>
+          </summary>
           
-           <details className="group bg-white/60 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 p-4 open:pb-6 cursor-pointer">
-            <summary className="flex items-center justify-between font-semibold text-slate-700 list-none select-none">
-              Can I track payments?
-              <span className="transition group-open:rotate-180">▼</span>
-            </summary>
-            <p className="text-slate-500 mt-4 leading-relaxed">
-              Yes. If you are collecting money for a <strong>group gift, sports pitch hire, or dinner</strong>, you can display your Sort Code. 
-              We calculate the total cost per family (Adults vs Kids) automatically.
-            </p>
-          </details>
-        </div>
+          <div className="mt-8 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <details className="group/item bg-white/40 backdrop-blur-sm rounded-xl border border-slate-200/60 p-4 open:pb-6 cursor-pointer hover:bg-white/60 transition-colors">
+              <summary className="flex items-center justify-between font-semibold text-slate-700 list-none select-none text-sm">
+                Is Whozin really free?
+                <span className="text-slate-400 transition-transform group-open/item:rotate-180">▼</span>
+              </summary>
+              <p className="text-slate-500 mt-3 text-sm leading-relaxed">
+                Yes! Whozin is 100% free for community events. Perfect for <strong>Sunday Roasts, 5-a-side Football, Pub Quizzes, School Fetes</strong>, as well as <strong>Diwali Parties and Christmas Dinners</strong>. No hidden booking fees.
+              </p>
+            </details>
+
+            <details className="group/item bg-white/40 backdrop-blur-sm rounded-xl border border-slate-200/60 p-4 open:pb-6 cursor-pointer hover:bg-white/60 transition-colors">
+              <summary className="flex items-center justify-between font-semibold text-slate-700 list-none select-none text-sm">
+                Do guests need an app?
+                <span className="text-slate-400 transition-transform group-open/item:rotate-180">▼</span>
+              </summary>
+              <p className="text-slate-500 mt-3 text-sm leading-relaxed">
+                No. "Downloading an app" kills participation. Your guests just click the link (optimized for <strong>WhatsApp</strong>), type their name, and click "I'm In". It works on any phone, no login required.
+              </p>
+            </details>
+            
+             <details className="group/item bg-white/40 backdrop-blur-sm rounded-xl border border-slate-200/60 p-4 open:pb-6 cursor-pointer hover:bg-white/60 transition-colors">
+              <summary className="flex items-center justify-between font-semibold text-slate-700 list-none select-none text-sm">
+                Can I track payments?
+                <span className="text-slate-400 transition-transform group-open/item:rotate-180">▼</span>
+              </summary>
+              <p className="text-slate-500 mt-3 text-sm leading-relaxed">
+                Yes. If you're collecting money for a <strong>group gift, sports pitch, or dinner</strong>, simply add your payment details. We calculate the split cost for Adults vs Kids automatically.
+              </p>
+            </details>
+          </div>
+        </details>
       </div>
 
       <div className="relative z-10 border-t border-slate-100 bg-white/50">
