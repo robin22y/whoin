@@ -4,7 +4,6 @@ import { revalidatePath } from 'next/cache'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge' // You might need to create this or use a span
 import { Lock, Trash2, ExternalLink, ShieldAlert, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 

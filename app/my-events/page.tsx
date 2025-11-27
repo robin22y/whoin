@@ -7,6 +7,7 @@ import { Footer } from '@/components/footer'
 import { Calendar, MapPin, Settings, LogIn, Plus, ArrowRight, Cloud, Smartphone } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { LogoutButton } from '@/components/logout-button'
+import Image from 'next/image'
 
 export default function MyEventsPage() {
   const [events, setEvents] = useState<any[]>([])
@@ -24,7 +25,7 @@ export default function MyEventsPage() {
       if (user) {
         const { data } = await supabase
           .from('events')
-          .select('id, title, date, location, management_key, created_at, short_code')
+          .select('id, title, date, location, management_key, created_at, short_code, banner_url')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
         
@@ -135,8 +136,22 @@ export default function MyEventsPage() {
             {events.map((event) => (
               <div 
                 key={event.id} 
-                className="group relative bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-200 flex flex-col h-full"
+                className="group relative bg-white rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-200 flex flex-col h-full overflow-hidden"
               >
+                {/* Banner Image */}
+                {event.banner_url && (
+                  <div className="relative h-40 w-full bg-slate-100">
+                    <Image 
+                      src={event.banner_url} 
+                      alt={event.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60"></div>
+                  </div>
+                )}
+
+                <div className="p-6 flex flex-col flex-1">
                 {/* Card Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1 pr-4">
@@ -181,6 +196,7 @@ export default function MyEventsPage() {
                         <ArrowRight className="w-5 h-5" />
                       </Button>
                    </Link>
+                </div>
                 </div>
 
               </div>

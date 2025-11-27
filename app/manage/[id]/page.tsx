@@ -66,8 +66,19 @@ export default async function ManageEventPage({
       
       {/* --- NAVY HEADER BACKGROUND --- */}
       <div className="absolute top-0 left-0 right-0 h-80 bg-[#0F172A] -z-0">
-         <div className="absolute inset-0 opacity-10" 
-             style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(to right, #94a3b8 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+        {/* Banner Image (if exists) */}
+        {event.banner_url ? (
+          <div className="absolute inset-0">
+            <img 
+              src={event.banner_url} 
+              alt="Event Banner" 
+              className="w-full h-full object-cover opacity-40"
+            />
+            <div className="absolute inset-0 bg-[#0F172A]/60"></div>
+          </div>
+        ) : null}
+        <div className="absolute inset-0 opacity-10" 
+            style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(to right, #94a3b8 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
         </div>
       </div>
 
