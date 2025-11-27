@@ -31,6 +31,11 @@ export const metadata: Metadata = {
     "Christmas",
     "Community Events"
   ],
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   manifest: "/manifest.json",
   themeColor: "#000000",
   viewport: {
