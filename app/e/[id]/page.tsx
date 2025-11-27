@@ -2,14 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { GuestForm } from '@/components/guest-form'
 import { ShareCard } from '@/components/share-card'
 import { ManageButton } from '@/components/manage-button'
-import { AddToCalendar } from '@/components/add-to-calendar'
-import { BrandLogo } from '@/components/brand-logo'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, MapPin, Users, ChevronDown, Clock, ShieldAlert } from 'lucide-react'
+import Image from 'next/image'
+import { Calendar, MapPin, Users, ChevronDown, ShieldAlert } from 'lucide-react'
 
 export async function generateMetadata({
   params,
@@ -24,17 +23,31 @@ export async function generateMetadata({
   }
 }
 
-export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EventPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = await params
   const supabase = await createClient()
 
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-  let query = supabase.from('events').select('id, title, date, location, bank_details, price_per_adult, price_per_child, user_id, theme, short_code, description, banner_url, is_suspended')
-  if (isUUID) query = query.eq('id', id)
-  else query = query.eq('short_code', id)
+
+  let query = supabase
+    .from('events')
+    .select('id, title, date, location, bank_details, price_per_adult, price_per_child, user_id, theme, short_code, description, banner_url, is_suspended')
+
+  if (isUUID) {
+    query = query.eq('id', id)
+  } else {
+    query = query.eq('short_code', id)
+  }
+
   const { data: event, error } = await query.single()
 
-  if (error || !event) notFound()
+  if (error || !event) {
+    notFound()
+  }
 
   // @ts-ignore
   if (event.is_suspended) {
@@ -55,149 +68,219 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     )
   }
 
-  const { data: guests } = await supabase.from('guests').select('*').eq('event_id', event.id).order('created_at', { ascending: true })
+  const { data: guests } = await supabase
+    .from('guests')
+    .select('*')
+    .eq('event_id', event.id)
+    .order('created_at', { ascending: true })
+
   const { data: { user } } = await supabase.auth.getUser()
   const isOrganizer = user && event.user_id === user.id
 
-  // Date Formatting
-  const eventDate = new Date(event.date)
-  const dateStr = eventDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
-  const timeStr = eventDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-
-  // Theme Colors (Gradients)
-  const themes = {
-    minimal: "bg-gradient-to-b from-slate-900 to-slate-800",
-    christmas: "bg-gradient-to-b from-red-900 to-red-800",
-    diwali: "bg-gradient-to-b from-amber-900 to-amber-800",
-    birthday: "bg-gradient-to-b from-blue-900 to-blue-800"
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
   }
+
+  const generateCalendarUrl = () => {
+    const startDate = new Date(event.date)
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000)
+    
+    const formatCalendarDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    }
+    
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: event.title,
+      dates: `${formatCalendarDate(startDate)}/${formatCalendarDate(endDate)}`,
+      details: `Location: ${event.location}${event.description ? `\n\n${event.description}` : ''}`,
+      location: event.location,
+    })
+    
+    return `https://calendar.google.com/calendar/render?${params.toString()}`
+  }
+
+  const themes = {
+    minimal: {
+      bg: "bg-[#F7F6F3]",
+      pattern: "radial-gradient(#e5e7eb 1px, transparent 1px)",
+      header: "bg-[#0F172A]",
+      text: "text-[#0F172A]"
+    },
+    christmas: {
+      bg: "bg-[#FEF2F2]",
+      pattern: "radial-gradient(#FECACA 2px, transparent 2px)",
+      header: "bg-red-700",
+      text: "text-red-900"
+    },
+    diwali: {
+      bg: "bg-[#FFFBEB]",
+      pattern: "radial-gradient(#FCD34D 2px, transparent 2px)",
+      header: "bg-amber-600",
+      text: "text-amber-900"
+    },
+    birthday: {
+      bg: "bg-[#EFF6FF]",
+      pattern: "radial-gradient(#93C5FD 2px, transparent 2px)",
+      header: "bg-blue-600",
+      text: "text-blue-900"
+    }
+  }
+
   // @ts-ignore
-  const themeBg = themes[event.theme] || themes.minimal
+  const currentTheme = themes[event.theme] || themes.minimal
 
   return (
-    <div className="min-h-screen bg-[#F7F6F3] font-sans selection:bg-slate-900 selection:text-white">
+    <div className={`min-h-screen flex flex-col items-center font-sans ${currentTheme.bg} transition-colors duration-500 selection:bg-black selection:text-white`}>
       
-      {/* --- IMMERSIVE HEADER --- */}
-      <div className={`relative w-full ${themeBg} text-white pt-10 pb-32 px-6 overflow-hidden`}>
-        
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10" 
-             style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
-        </div>
-
-        {/* Top Bar */}
-        <div className="relative z-10 flex justify-between items-center max-w-4xl mx-auto mb-12">
-          <Link href="/" className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
-            {/* White Box, Navy Icon, Bigger Size (w-8 h-8) */}
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#0F172A] shadow-lg shadow-black/5 group-hover:scale-105 transition-transform">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-              </svg>
-            </div>
-            {/* White Text with Shadow (Readable on all themes) */}
-            <span className="font-bold text-xl tracking-tight text-white drop-shadow-md">The Invite Link</span>
-          </Link>
-          {isOrganizer && (
-             <div className="[&>a>button]:bg-white/10 [&>a>button]:text-white [&>a>button]:border-white/20 [&>a>button]:hover:bg-white/20">
-                <ManageButton eventId={event.id} />
-             </div>
-          )}
-        </div>
-
-        {/* Event Hero Info */}
-        <div className="relative z-10 text-center max-w-2xl mx-auto space-y-6">
-           <h1 className="text-5xl sm:text-6xl font-serif font-bold leading-tight tracking-tight drop-shadow-md">
-             {event.title}
-           </h1>
-           
-           <div className="inline-flex flex-wrap justify-center gap-3 sm:gap-6 text-sm sm:text-base font-medium text-white/90">
-              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
-                <Calendar className="w-4 h-4" /> {dateStr}
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
-                <Clock className="w-4 h-4" /> {timeStr}
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
-                <MapPin className="w-4 h-4" /> {event.location}
-              </div>
-           </div>
-
-           {/* Note / Description */}
-           {event.description && (
-             <p className="text-lg sm:text-xl text-white/80 italic font-serif max-w-lg mx-auto leading-relaxed">
-               "{event.description}"
-             </p>
-           )}
-
-           <div className="pt-2 opacity-80 hover:opacity-100 transition-opacity">
-              <AddToCalendar event={event} />
-           </div>
-        </div>
+      <div className="fixed inset-0 h-full w-full pointer-events-none z-0 opacity-[0.4]" 
+           style={{ backgroundImage: currentTheme.pattern, backgroundSize: '24px 24px' }}>
       </div>
 
-      {/* --- FLOATING CONTENT CARD --- */}
-      <main className="relative z-20 -mt-20 px-4 pb-20">
-        <div className="w-full max-w-[480px] mx-auto bg-white rounded-[2.5rem] shadow-2xl shadow-slate-900/10 border border-slate-100 overflow-hidden">
-           
-           {/* Banner Image (If exists) */}
-           {event.banner_url && (
-             <div className="h-48 sm:h-56 w-full relative">
-                <img src={event.banner_url} alt="Cover" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-             </div>
-           )}
+      {/* Updated Logo (Matches Home Page) */}
+      <header className="relative z-10 w-full max-w-md py-6 flex justify-center">
+         <Link href="/" className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#0F172A] shadow-lg shadow-black/5 group-hover:scale-105 transition-transform">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+               </svg>
+            </div>
+            <span className="font-bold text-xl tracking-tight text-[#0F172A] drop-shadow-sm">The Invite Link</span>
+         </Link>
+      </header>
 
-           <div className="p-6 sm:p-10">
-              
-              {/* Organizer Tools (Collapsible) */}
-              {isOrganizer && (
-                <div className="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                   <details className="group">
-                      <summary className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        Organizer Controls
-                        <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
-                      </summary>
-                      <div className="pt-4 mt-2 border-t border-slate-200">
-                        <ShareCard eventId={event.id} shortCode={event.short_code} eventTitle={event.title} eventDate={event.date} eventLocation={event.location} />
-                      </div>
-                   </details>
+      <main className="relative z-10 w-full max-w-[420px] px-4 mb-12">
+        
+        <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100 ring-1 ring-black/5">
+          
+          {/* Header with Banner Support */}
+          <div className={`${currentTheme.header} p-8 text-center text-white relative overflow-hidden min-h-[220px] flex flex-col justify-center`}>
+             
+             {/* BANNER IMAGE BACKGROUND (If available) */}
+             {event.banner_url && (
+               <>
+                 <Image 
+                   src={event.banner_url} 
+                   alt="Event Banner" 
+                   fill 
+                   className="object-cover"
+                   priority
+                 />
+                 {/* Dark Overlay so white text is readable */}
+                 <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
+               </>
+             )}
+
+             {/* Organizer Actions */}
+             {isOrganizer && (
+                <div className="absolute top-4 right-4 z-20">
+                  <div className="[&>a>button]:bg-black/30 [&>a>button]:text-white [&>a>button]:border-white/20 [&>a>button]:hover:bg-black/50 [&>a>button]:h-8 [&>a>button]:text-xs [&>a>button]:backdrop-blur-md">
+                    <ManageButton eventId={event.id} />
+                  </div>
                 </div>
-              )}
-
-              {/* THE FORM */}
-              <GuestForm 
-                eventId={event.id} 
-                pricePerAdult={event.price_per_adult || 0} 
-                pricePerChild={event.price_per_child || 0} 
-                bankDetails={event.bank_details || ''} 
-              />
-
-           </div>
-
-           {/* Guest List Footer */}
-           {isOrganizer && guests && guests.length > 0 && (
-             <div className="bg-slate-50 border-t border-slate-100 p-6 sm:p-8 text-center">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-                  <Users className="w-3 h-3 inline mr-1" /> Who's in? ({guests.length})
-                </p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {guests.map((guest) => (
-                    <div key={guest.id} className="px-3 py-1.5 bg-white rounded-xl border border-slate-200 shadow-sm text-sm font-medium text-slate-700">
-                      {guest.name}
-                      {(guest.adult_count + guest.kid_count) > 1 && 
-                        <span className="ml-1.5 text-xs text-slate-400">+{guest.adult_count + guest.kid_count - 1}</span>
-                      }
+             )}
+             
+             <div className="relative z-10">
+                <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 leading-tight tracking-tight drop-shadow-md">
+                  {event.title}
+                </h1>
+                
+                <div className="inline-flex flex-col gap-1.5 mt-2 text-sm font-medium text-white/90">
+                    <div className="flex items-center justify-center gap-2 drop-shadow-sm">
+                      <Calendar className="w-4 h-4 opacity-90" /> 
+                      <span>{formatDate(event.date)}</span>
                     </div>
-                  ))}
+                    <div className="flex items-center justify-center gap-2 drop-shadow-sm">
+                      <MapPin className="w-4 h-4 opacity-90" /> 
+                      <span>{event.location}</span>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 w-full flex justify-center">
+                      <a
+                        href={generateCalendarUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 border border-white/30 rounded-full text-white text-xs font-bold uppercase tracking-wide hover:bg-white/30 transition-all shadow-sm backdrop-blur-md"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        Add to Calendar
+                      </a>
+                    </div>
                 </div>
              </div>
-           )}
+          </div>
 
+          {/* Card Body */}
+          <div className="p-6 sm:p-8">
+            
+            {isOrganizer && (
+              <details className="mb-8 group bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100 transition-colors">
+                  Organizer: Share Link
+                  <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="p-4 border-t border-slate-200 bg-white">
+                  <ShareCard
+                    eventId={event.id}
+                    shortCode={event.short_code}
+                    eventTitle={event.title}
+                    eventDate={event.date}
+                    eventLocation={event.location}
+                  />
+                </div>
+              </details>
+            )}
+
+            {event.description && (
+              <div className="mb-8 text-center px-4">
+                <p className="text-lg font-medium text-slate-600 italic leading-relaxed">
+                  "{event.description}"
+                </p>
+              </div>
+            )}
+
+            <GuestForm
+              eventId={event.id}
+              pricePerAdult={event.price_per_adult || 0}
+              pricePerChild={event.price_per_child || 0}
+              bankDetails={event.bank_details || ''}
+            />
+          </div>
+
+          {/* Guest List Footer */}
+          {guests && guests.length > 0 && (
+            <div className="bg-slate-50 border-t border-slate-100 p-6">
+              <div className="flex items-center justify-center gap-2 mb-4 opacity-50">
+                <Users className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Who is in? ({guests.length})</span>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {guests.map((guest) => (
+                  <span key={guest.id} className="inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-700 shadow-sm">
+                    {guest.name}
+                    {(guest.adult_count + guest.kid_count) > 1 && (
+                      <span className="ml-1.5 text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 rounded-full border border-slate-200">
+                        +{guest.adult_count + guest.kid_count - 1}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </main>
-
-      <Footer />
+      
+      <div className="pb-8 opacity-50 text-xs text-slate-500 hover:opacity-100 transition-opacity">
+        <Footer />
+      </div>
     </div>
   )
 }

@@ -13,17 +13,19 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig: NextConfig = {
-  /* Add this images configuration */
+  /* 👇 ADD THIS IMAGES BLOCK 👇 */
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'sadwycupbggsrfxmwehy.supabase.co',
+        hostname: 'sadwycupbggsrfxmwehy.supabase.co', // Your Supabase Project Hostname
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
     ],
   },
+  /* 👆 END ADDITION 👆 */
+  
   turbopack: {
     root: process.cwd(),
   },
