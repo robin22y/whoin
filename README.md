@@ -1,4 +1,4 @@
-# WhoIn.uk - Event Sign-up
+# Whozin - Event Sign-up
 
 Extreme simple sign-up tool for Community Events.
 

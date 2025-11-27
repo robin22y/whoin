@@ -17,9 +17,10 @@ const calistoga = Calistoga({
 });
 
 export const metadata: Metadata = {
-  title: "WhoIn.uk - Simple Sign-up",
+  title: "Whozin - Simple Event Sign-up",
   description: "The simplest sign-up tool for community events. Create WhatsApp-friendly invite links in 30 seconds.",
   keywords: [
+    "Whozin",
     "WhatsApp RSVP",
     "Event Planner UK",
     "Sunday Roast",
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "WhoIn",
+    title: "Whozin",
   },
 };
 

@@ -10,7 +10,7 @@ export default function Home() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'WhoIn.uk',
+    name: 'Whozin',
     applicationCategory: 'ProductivityApplication',
     operatingSystem: 'Any (Web Browser)',
     offers: {
@@ -35,12 +35,12 @@ export default function Home() {
           <div className="flex items-center gap-2 cursor-pointer group">
             <Image 
               src="/logo.svg" 
-              alt="WhoIn Logo" 
+              alt="Whozin Logo" 
               width={32} 
               height={32} 
               className="group-hover:scale-110 transition-transform"
             />
-            <span className="font-bold text-xl tracking-tight">WhoIn.uk</span>
+            <span className="font-bold text-xl tracking-tight">Whozin</span>
           </div>
         </SecretTrigger>
         
@@ -125,7 +125,7 @@ export default function Home() {
               <span className="transition group-open:rotate-180">▼</span>
             </summary>
             <p className="text-slate-500 mt-4 leading-relaxed">
-              Yes! WhoIn.uk is a 100% free sign-up tool designed for all communities. 
+              Yes! Whozin is a 100% free sign-up tool designed for all communities. 
               It is perfect for organizing <strong>Sunday Roasts, 5-a-side Football, Pub Quizzes, School Fetes</strong>, as well as <strong>Diwali Parties and Christmas Dinners</strong>.
               We don't charge booking fees for free events.
             </p>

@@ -67,7 +67,7 @@ export function Footer() {
           </Button>
         </div>
         <p className="text-xs text-slate-400 text-center sm:text-left">
-          © {new Date().getFullYear()} WhoIn.uk • Simple Event Sign-up. All data stored in UK/EU.
+          © {new Date().getFullYear()} Whozin • Simple Event Sign-up. All data stored in UK/EU.
         </p>
       </div>
     </footer>

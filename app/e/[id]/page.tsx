@@ -111,7 +111,7 @@ export default async function EventPage({
            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm ${currentTheme.header}`}>
               W
             </div>
-            <span className={`font-bold text-xl tracking-tight ${currentTheme.text}`}>WhoIn.uk</span>
+            <span className={`font-bold text-xl tracking-tight ${currentTheme.text}`}>Whozin</span>
         </Link>
       </header>
 

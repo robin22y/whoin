@@ -10,7 +10,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
             <p className="text-muted-foreground">
-              WhoIn.uk is a free utility tool provided "as is".
+              Whozin is a free utility tool provided "as is".
             </p>
           </section>
 
@@ -40,7 +40,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">5. Limitation of Liability</h2>
             <p className="text-muted-foreground">
-              To the maximum extent permitted by law, WhoIn.uk is not liable for any direct, indirect, or consequential loss arising from the use of this tool.
+              To the maximum extent permitted by law, Whozin is not liable for any direct, indirect, or consequential loss arising from the use of this tool.
             </p>
           </section>
 

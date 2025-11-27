@@ -1,6 +1,6 @@
 {
-  "name": "WhoIn.uk",
-  "short_name": "WhoIn",
+  "name": "Whozin",
+  "short_name": "Whozin",
   "description": "Simple event sign-up tool",
   "start_url": "/",
   "display": "standalone",

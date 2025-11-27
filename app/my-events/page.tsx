@@ -70,7 +70,7 @@ export default function MyEventsPage() {
            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl">
               W
             </div>
-            <span className="font-bold text-xl tracking-tight">WhoIn.uk</span>
+            <span className="font-bold text-xl tracking-tight">Whozin</span>
         </Link>
         
         <div className="flex items-center gap-2">
