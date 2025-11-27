@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
+import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 
 const inter = Inter({
@@ -60,6 +61,7 @@ export default function RootLayout({
         <Suspense fallback={children}>
           <PostHogProvider>{children}</PostHogProvider>
         </Suspense>
+        <Analytics />
       </body>
     </html>
   );
