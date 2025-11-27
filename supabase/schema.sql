@@ -13,19 +13,74 @@ CREATE TABLE IF NOT EXISTS events (
   bank_details TEXT,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   price_per_adult DECIMAL(10, 2) DEFAULT 0,
+  price_per_child DECIMAL(10, 2) DEFAULT 0,
   management_key TEXT NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  short_code TEXT,
+  theme TEXT DEFAULT 'minimal',
+  description TEXT,
+  banner_url TEXT,
+  is_suspended BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add management_key column if table already exists (for existing databases)
+-- Add missing columns if table already exists (for existing databases)
 DO $$ 
 BEGIN
+  -- management_key
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'events' AND column_name = 'management_key'
   ) THEN
     ALTER TABLE events ADD COLUMN management_key TEXT NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex');
+  END IF;
+  
+  -- price_per_child
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'events' AND column_name = 'price_per_child'
+  ) THEN
+    ALTER TABLE events ADD COLUMN price_per_child DECIMAL(10, 2) DEFAULT 0;
+  END IF;
+  
+  -- short_code
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'events' AND column_name = 'short_code'
+  ) THEN
+    ALTER TABLE events ADD COLUMN short_code TEXT;
+  END IF;
+  
+  -- theme
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'events' AND column_name = 'theme'
+  ) THEN
+    ALTER TABLE events ADD COLUMN theme TEXT DEFAULT 'minimal';
+  END IF;
+  
+  -- description
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'events' AND column_name = 'description'
+  ) THEN
+    ALTER TABLE events ADD COLUMN description TEXT;
+  END IF;
+  
+  -- banner_url
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'events' AND column_name = 'banner_url'
+  ) THEN
+    ALTER TABLE events ADD COLUMN banner_url TEXT;
+  END IF;
+  
+  -- is_suspended
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'events' AND column_name = 'is_suspended'
+  ) THEN
+    ALTER TABLE events ADD COLUMN is_suspended BOOLEAN DEFAULT false;
   END IF;
 END $$;
 

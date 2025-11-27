@@ -13,9 +13,18 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig: NextConfig = {
-  /* other config options here */
+  /* Add this images configuration */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'sadwycupbggsrfxmwehy.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
   turbopack: {
-    // Set root to current directory to avoid lockfile warning
     root: process.cwd(),
   },
 };

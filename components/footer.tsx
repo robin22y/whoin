@@ -3,11 +3,19 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Download } from 'lucide-react'
+import { useInstallPrompt } from '@/hooks/use-install-prompt'
 
 export function Footer() {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const supabase = createClient()
+  const { isInstallable, handleInstallClick } = useInstallPrompt()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleDeleteData = async () => {
     if (!confirm('Are you sure you want to delete all your data? This action cannot be undone.')) {
@@ -57,14 +65,26 @@ export function Footer() {
               Cookie Policy
             </Link>
           </div>
-          <Button
-            variant="ghost"
-            onClick={handleDeleteData}
-            disabled={isDeleting}
-            className="min-h-[48px] w-full sm:w-auto text-slate-400 hover:text-red-600 hover:bg-red-50"
-          >
-            {isDeleting ? 'Deleting...' : 'Delete My Data'}
-          </Button>
+          <div className="flex flex-wrap gap-2 items-center">
+            {mounted && isInstallable && (
+              <Button 
+                onClick={handleInstallClick}
+                variant="outline" 
+                className="gap-2 min-h-[48px]"
+              >
+                <Download className="w-4 h-4" />
+                Install App
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              onClick={handleDeleteData}
+              disabled={isDeleting}
+              className="min-h-[48px] w-full sm:w-auto text-slate-400 hover:text-red-600 hover:bg-red-50"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete My Data'}
+            </Button>
+          </div>
         </div>
         <p className="text-xs text-slate-400 text-center sm:text-left">
           © {new Date().getFullYear()} The Invite Link • Simple Event Sign-up. All data stored in UK/EU.

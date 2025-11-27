@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Sparkles, Gift, Flame, PartyPopper, CreditCard } from 'lucide-react'
 
-// ... (keep generateShortCode helper) ...
 function generateShortCode() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   let result = ''
@@ -17,7 +16,6 @@ function generateShortCode() {
 }
 
 export function EventCreator() {
-  // ... (keep all state variables exactly the same) ...
   const [eventTitle, setEventTitle] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -31,7 +29,6 @@ export function EventCreator() {
   const router = useRouter()
   const supabase = createClient()
 
-  // ... (keep handleSubmit exactly the same) ...
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -71,7 +68,14 @@ export function EventCreator() {
         localStorage.setItem(`event_${data.id}_key`, data.management_key)
         const myEvents = JSON.parse(localStorage.getItem('my_events') || '[]')
         if (!myEvents.find((e: any) => e.id === data.id)) {
-          myEvents.push({ id: data.id, title: eventTitle, date: combinedDateTime, location, management_key: data.management_key, created_at: new Date().toISOString() })
+          myEvents.push({ 
+            id: data.id, 
+            title: eventTitle, 
+            date: combinedDateTime, 
+            location, 
+            management_key: data.management_key, 
+            created_at: new Date().toISOString() 
+          })
           localStorage.setItem('my_events', JSON.stringify(myEvents))
         }
       }
@@ -98,7 +102,7 @@ export function EventCreator() {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
       
-      {/* MODERN THEME SELECTOR */}
+      {/* THEME SELECTOR */}
       <div className="flex flex-col items-center mb-12 space-y-3">
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Select Theme</span>
         <div className="flex items-center gap-3 p-1.5 bg-slate-50/80 backdrop-blur-sm border border-slate-200/60 rounded-full shadow-sm">
@@ -113,22 +117,13 @@ export function EventCreator() {
               title={t.label}
             >
               <t.icon className={`w-4 h-4 transition-colors ${theme === t.id ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'}`} />
-              
-              {/* Tooltip on Hover */}
-              <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                {t.label}
-              </span>
             </button>
           ))}
         </div>
-        {/* Active Label Feedback */}
-        <span className="h-4 text-sm font-medium text-slate-500 transition-all duration-300">
-           {themeOptions.find(t => t.id === theme)?.label} Style
-        </span>
       </div>
 
+      {/* MAD LIBS FORM */}
       <form onSubmit={handleSubmit} className="transition-[height] duration-500 ease-in-out">
-        {/* ... (Keep the rest of your form content EXACTLY the same) ... */}
         <div className="text-3xl md:text-4xl leading-[1.8] font-medium text-slate-300 transition-all text-center sm:text-left">
           
           <span className="text-slate-500">I am organizing </span>
@@ -166,7 +161,7 @@ export function EventCreator() {
 
           {location.length > 3 && (
             <div className={`mt-10 space-y-10 ${revealClass}`}>
-               {/* Note Section */}
+               {/* NOTE */}
                <div className="text-xl md:text-2xl border-l-4 border-slate-200 pl-6 py-2 bg-slate-50/50 rounded-r-xl">
                   <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Personal Note (Optional)</span>
                   <span className="text-slate-300 font-serif italic">"</span>
@@ -180,38 +175,23 @@ export function EventCreator() {
                   <span className="text-slate-300 font-serif italic">"</span>
                </div>
 
-               {/* Money Section */}
+               {/* MONEY */}
                <div className="pt-8 border-t border-dashed border-slate-200">
-                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-4">Ticket Price (Leave 0 for Free)</span>
+                  <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-4">Ticket Price (Optional)</span>
                   
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-4 text-2xl text-slate-600">
-                    <div className="flex items-baseline gap-1">
-                        <span>Adults: £</span>
-                        <input 
-                            type="number" 
-                            step="0.01" 
-                            placeholder="0" 
-                            value={pricePerAdult} 
-                            onChange={(e) => setPricePerAdult(e.target.value)} 
-                            className={`${inputClass} w-24`} 
-                        />
-                    </div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-2xl text-slate-600">
+                    <span>Adults: £</span>
+                    <input type="number" step="0.01" placeholder="0" value={pricePerAdult} onChange={(e) => setPricePerAdult(e.target.value)} className={`${inputClass} w-24`} />
                     
-                    <div className="flex items-baseline gap-1">
-                        <span>Kids: £</span>
-                        <input 
-                            type="number" 
-                            step="0.01" 
-                            placeholder="0" 
-                            value={pricePerChild} 
-                            onChange={(e) => setPricePerChild(e.target.value)} 
-                            className={`${inputClass} w-24`} 
-                        />
-                    </div>
+                    {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
+                        <span className={revealClass}>
+                           <span>& Kids: £</span>
+                           <input type="number" step="0.01" placeholder="0" value={pricePerChild} onChange={(e) => setPricePerChild(e.target.value)} className={`${inputClass} w-24`} />
+                        </span>
+                    )}
                   </div>
                   
-                  {/* Show Bank Details only if a price is entered */}
-                  {((parseFloat(pricePerAdult) > 0) || (parseFloat(pricePerChild) > 0)) && (
+                  {pricePerAdult && parseFloat(pricePerAdult) > 0 && (
                       <div className={`mt-8 ${revealClass}`}>
                          <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm max-w-lg mx-auto sm:mx-0">
                             <div className="flex items-center gap-2 mb-4 text-slate-500">
