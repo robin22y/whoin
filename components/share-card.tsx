@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Copy, MessageCircle } from 'lucide-react'
+import { Copy, MessageCircle, MessageSquare } from 'lucide-react'
 
 interface ShareCardProps {
   eventId: string
@@ -40,18 +40,31 @@ export function ShareCard({ eventId, shortCode, eventTitle, eventDate, eventLoca
     alert('Link copied to clipboard!')
   }
 
-  const shareOnWhatsApp = () => {
+  const getShareMessage = () => {
     const formattedDate = formatDate(eventDate)
     let message = `You're invited to ${eventTitle}! 📅 ${formattedDate} 📍 ${eventLocation}. Sign up here: ${eventLink} (via theinvitelink.com)`
     
     if (includeCalendar) {
       message += '\n\nP.S. Save this to your calendar'
     }
+    
+    return message
+  }
 
+  const shareOnWhatsApp = () => {
+    const message = getShareMessage()
     const encodedMessage = encodeURIComponent(message)
     const whatsappUrl = `https://wa.me/?text=${encodedMessage}`
     
     window.open(whatsappUrl, '_blank')
+  }
+
+  const shareViaSMS = () => {
+    const message = getShareMessage()
+    const encodedMessage = encodeURIComponent(message)
+    const smsUrl = `sms:?&body=${encodedMessage}`
+    
+    window.location.href = smsUrl
   }
 
   return (
@@ -63,25 +76,23 @@ export function ShareCard({ eventId, shortCode, eventTitle, eventDate, eventLoca
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="event-link">Event Link</Label>
-          <div className="flex gap-2">
-            <Input
-              id="event-link"
-              value={eventLink}
-              readOnly
-              className="font-mono text-sm"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={copyToClipboard}
-              className="min-h-[48px]"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            onClick={shareOnWhatsApp}
+            className="w-full min-h-[48px] bg-[#25D366] hover:bg-[#128C7E] text-white"
+            size="lg"
+          >
+            <MessageCircle className="mr-2 h-5 w-5" />
+            WhatsApp
+          </Button>
+          <Button
+            onClick={shareViaSMS}
+            className="w-full min-h-[48px] bg-[#007AFF] hover:bg-[#0056b3] text-white"
+            size="lg"
+          >
+            <MessageSquare className="mr-2 h-5 w-5" />
+            Text / iMessage
+          </Button>
         </div>
 
         <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
@@ -100,14 +111,26 @@ export function ShareCard({ eventId, shortCode, eventTitle, eventDate, eventLoca
           />
         </div>
 
-        <Button
-          onClick={shareOnWhatsApp}
-          className="w-full min-h-[48px]"
-          size="lg"
-        >
-          <MessageCircle className="mr-2 h-5 w-5" />
-          Share on WhatsApp
-        </Button>
+        <div className="space-y-2">
+          <Label htmlFor="event-link">Copy Link</Label>
+          <div className="flex gap-2">
+            <Input
+              id="event-link"
+              value={eventLink}
+              readOnly
+              className="font-mono text-sm"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={copyToClipboard}
+              className="min-h-[48px]"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )

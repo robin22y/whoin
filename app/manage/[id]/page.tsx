@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+
 import { Footer } from '@/components/footer'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
 import {
   Table,
   TableBody,
@@ -9,14 +10,22 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+
 import { ExportButton } from '@/components/export-button'
+
 import { ShareCard } from '@/components/share-card'
+
 import { LogoutButton } from '@/components/logout-button'
+
 import { EditEventForm } from '@/components/edit-event-form'
+
 import { redirect } from 'next/navigation'
+
 import Link from 'next/link'
+
 import { Button } from '@/components/ui/button'
-import { Users, PoundSterling, Calendar, MapPin, ChevronLeft, ShieldAlert, ArrowLeft } from 'lucide-react'
+
+import { Users, PoundSterling, Calendar, MapPin, ArrowLeft, ShieldAlert } from 'lucide-react'
 
 export default async function ManageEventPage({
   params,
@@ -66,27 +75,15 @@ export default async function ManageEventPage({
       
       {/* --- NAVY HEADER BACKGROUND --- */}
       <div className="absolute top-0 left-0 right-0 h-80 bg-[#0F172A] -z-0">
-        {/* Banner Image (if exists) */}
-        {event.banner_url ? (
-          <div className="absolute inset-0">
-            <img 
-              src={event.banner_url} 
-              alt="Event Banner" 
-              className="w-full h-full object-cover opacity-40"
-            />
-            <div className="absolute inset-0 bg-[#0F172A]/60"></div>
-          </div>
-        ) : null}
-        <div className="absolute inset-0 opacity-10" 
-            style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(to right, #94a3b8 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+         <div className="absolute inset-0 opacity-10" 
+             style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(to right, #94a3b8 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
         </div>
       </div>
 
-      {/* GLOBAL NAV (Dark Mode Text for Contrast on Navy) */}
+      {/* GLOBAL NAV */}
       <header className="relative z-10 w-full px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#0F172A] font-bold text-xl shadow-lg">
-              {/* Link Icon SVG */}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -99,9 +96,7 @@ export default async function ManageEventPage({
            <Link href="/my-events" className="hidden sm:block">
              <Button variant="ghost" size="sm" className="text-blue-100 hover:text-white hover:bg-white/10">My Events</Button>
            </Link>
-           <div className="[&>button]:text-blue-100 [&>button]:hover:text-white [&>button]:hover:bg-white/10">
-             <LogoutButton />
-           </div>
+           <LogoutButton />
         </div>
       </header>
 
@@ -130,9 +125,8 @@ export default async function ManageEventPage({
               </div>
             </div>
             
-            {/* EDIT BUTTON (Now Visible) */}
+            {/* EDIT BUTTON */}
             <div className="w-full md:w-auto">
-               {/* We pass className to force the button to look good on dark bg */}
                <div className="[&>button]:bg-white [&>button]:text-[#0F172A] [&>button]:hover:bg-blue-50 [&>button]:border-0 [&>button]:shadow-lg">
                  <EditEventForm event={event} />
                </div>
@@ -140,10 +134,38 @@ export default async function ManageEventPage({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* THE LAYOUT (Flex on Mobile / Grid on Desktop) */}
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8">
           
-          {/* LEFT COLUMN: Main Dashboard */}
-          <div className="space-y-6 lg:col-span-2">
+          {/* --- RIGHT COLUMN: Sidebar (Appears FIRST on Mobile) --- */}
+          <div className="space-y-6 order-1 lg:order-2 lg:col-span-1">
+            
+            {/* SHARE CARD (Priority #1) */}
+            <ShareCard 
+                eventId={event.id}
+                shortCode={event.short_code}
+                eventTitle={event.title}
+                eventDate={event.date}
+                eventLocation={event.location}
+            />
+
+            {/* PRIVACY CARD */}
+            <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
+              <div className="flex items-center gap-2 mb-3 text-amber-600">
+                <ShieldAlert className="w-5 h-5" />
+                <span className="text-xs font-bold uppercase tracking-wider">Data Expiry</span>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed mb-4">
+                To protect privacy, this event and all guest data will be permanently deleted on:
+              </p>
+              <div className="bg-amber-50 text-amber-900 px-4 py-3 rounded-xl text-sm font-bold text-center border border-amber-100">
+                {formatDate(deletionDate.toISOString())}
+              </div>
+            </div>
+          </div>
+
+          {/* --- LEFT COLUMN: Main Dashboard (Appears SECOND on Mobile) --- */}
+          <div className="space-y-6 order-2 lg:order-1 lg:col-span-2">
             
             {/* STATS ROW */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -221,32 +243,6 @@ export default async function ManageEventPage({
                 )}
               </div>
             </div>
-          </div>
-
-          {/* RIGHT COLUMN: Sidebar */}
-          <div className="space-y-6">
-            
-            <ShareCard 
-                eventId={event.id}
-                shortCode={event.short_code}
-                eventTitle={event.title}
-                eventDate={event.date}
-                eventLocation={event.location}
-            />
-
-            <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-              <div className="flex items-center gap-2 mb-3 text-amber-600">
-                <ShieldAlert className="w-5 h-5" />
-                <span className="text-xs font-bold uppercase tracking-wider">Data Expiry</span>
-              </div>
-              <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                To protect privacy, this event and all guest data will be permanently deleted on:
-              </p>
-              <div className="bg-amber-50 text-amber-900 px-4 py-3 rounded-xl text-sm font-bold text-center border border-amber-100">
-                {formatDate(deletionDate.toISOString())}
-              </div>
-            </div>
-
           </div>
 
         </div>

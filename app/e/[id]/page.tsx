@@ -6,7 +6,7 @@ import { AddToCalendar } from '@/components/add-to-calendar'
 import { Footer } from '@/components/footer'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Calendar, MapPin, Users, ChevronDown, Clock } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({
@@ -151,25 +151,6 @@ export default async function EventPage({
           {/* Card Body - Reduced padding */}
           <div className="p-5 sm:p-6">
             
-            {/* Organizer Controls */}
-            {isOrganizer && (
-              <details className="mb-4 group bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
-                <summary className="flex items-center justify-between px-3 py-2 cursor-pointer list-none text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100 transition-colors">
-                  Organizer Controls
-                  <ChevronDown className="w-3.5 h-3.5 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="p-3 border-t border-slate-200 bg-white">
-                  <ShareCard
-                    eventId={event.id}
-                    shortCode={event.short_code}
-                    eventTitle={event.title}
-                    eventDate={event.date}
-                    eventLocation={event.location}
-                  />
-                </div>
-              </details>
-            )}
-
             {/* Personal Note - More compact */}
             {event.description && (
               <div className="mb-4 text-center px-2">
@@ -186,6 +167,22 @@ export default async function EventPage({
               bankDetails={event.bank_details || ''}
             />
           </div>
+
+          {/* Organizer Share Card - Prominent (Above Guest List) */}
+          {isOrganizer && (
+            <div className="bg-blue-50 border-t border-blue-100 p-6">
+              <div className="mb-3 text-center">
+                <h3 className="text-lg font-bold text-blue-900">👑 Invite Your Guests</h3>
+              </div>
+              <ShareCard
+                eventId={event.id}
+                shortCode={event.short_code}
+                eventTitle={event.title}
+                eventDate={event.date}
+                eventLocation={event.location}
+              />
+            </div>
+          )}
 
           {/* Guest List */}
           {guests && guests.length > 0 && (
