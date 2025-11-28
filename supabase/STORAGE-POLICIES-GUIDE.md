@@ -70,3 +70,4 @@ After creating these policies:
 2. Try uploading an image in the event creation form
 3. It should work now! ✅
 
+

@@ -74,3 +74,4 @@ Try uploading an image again. If you still get the RLS error, the WITH CHECK exp
 - **Cause**: Created policy multiple times
 - **Fix**: Delete all duplicates, keep only one with correct settings
 
+
